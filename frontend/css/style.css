@@ -1,0 +1,39 @@
+body {
+
+font-family: Arial;
+margin: 20px;
+background: #f5f5f5;
+
+}
+
+nav {
+
+margin-bottom: 20px;
+
+}
+
+nav a {
+
+margin-right: 15px;
+text-decoration: none;
+color: blue;
+
+}
+
+.product {
+
+background: white;
+padding: 20px;
+margin-bottom: 20px;
+border-radius: 10px;
+
+}
+
+button {
+
+padding: 10px 20px;
+background: blue;
+color: white;
+border: none;
+
+}
