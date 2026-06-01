@@ -1,70 +1,68 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
-
-<meta charset="UTF-8">
-<title>Registrierung</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Erstellen Sie Ihr persönliches Benutzerkonto bei EasyElectronics, um den unkomplizierten Einkauf und personalisierte Services zu nutzen.">
+    <title>Registrierung | EasyElectronics</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
-<h1>Registrierung</h1>
+    <!-- Dynamischer Header/Navbar Container -->
+    <header id="navbar-container"></header>
 
-<form id="registerForm">
+    <main class="container">
+        <h1>Konto erstellen</h1>
 
-<input type="text"
-id="firstname"
-placeholder="Vorname"
-required>
+        <form id="registerForm" aria-label="Registrierungsformular">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label for="firstname" style="font-weight: 500;">Vorname</label>
+                <input type="text" id="firstname" placeholder="Vorname" required autocomplete="given-name">
+            </div>
 
-<br><br>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label for="lastname" style="font-weight: 500;">Nachname</label>
+                <input type="text" id="lastname" placeholder="Nachname" required autocomplete="family-name">
+            </div>
 
-<input type="text"
-id="lastname"
-placeholder="Nachname"
-required>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label for="email" style="font-weight: 500;">E-Mail-Adresse</label>
+                <input type="email" id="email" placeholder="E-Mail" required autocomplete="email">
+            </div>
 
-<br><br>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label for="username" style="font-weight: 500;">Username (Benutzername)</label>
+                <input type="text" id="username" placeholder="Username" required autocomplete="username">
+            </div>
 
-<input type="email"
-id="email"
-placeholder="E-Mail"
-required>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label for="password" style="font-weight: 500;">Passwort</label>
+                <input type="password" id="password" placeholder="Passwort" required autocomplete="new-password">
+            </div>
 
-<br><br>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label for="password2" style="font-weight: 500;">Passwort wiederholen</label>
+                <input type="password" id="password2" placeholder="Passwort wiederholen" required autocomplete="new-password">
+            </div>
 
-<input type="text"
-id="username"
-placeholder="Username"
-required>
+            <button type="submit" class="btn btn-primary" id="register-submit-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="17" y1="11" x2="23" y2="11"></line>
+                </svg>
+                Registrieren
+            </button>
+        </form>
 
-<br><br>
+        <div id="status" style="text-align: center; margin-top: 15px; font-weight: 500;"></div>
+    </main>
 
-<input type="password"
-id="password"
-placeholder="Passwort"
-required>
-
-<br><br>
-
-<input type="password"
-id="password2"
-placeholder="Passwort wiederholen"
-required>
-
-<br><br>
-
-<button type="submit">
-
-Registrieren
-
-</button>
-
-</form>
-
-<script src="js/register.js"></script>
-
+    <!-- Globaler Navbar-Controller -->
+    <script src="js/navbar.js"></script>
+    <!-- Register-Controller -->
+    <script src="js/register.js"></script>
 </body>
 </html>

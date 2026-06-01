@@ -1,0 +1,142 @@
+// Globaler Header & Navbar Controller (EasyElectronics)
+
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Navbar-Container automatisch erstellen, falls nicht vorhanden
+    let container = document.getElementById("navbar-container");
+    if (!container) {
+        container = document.createElement("header");
+        container.id = "navbar-container";
+        document.body.insertBefore(container, document.body.firstChild);
+    }
+
+    // 2. navbar.html per AJAX laden
+    fetch('navbar.html')
+        .then(response => {
+            if (!response.ok) {
+                // Relativer Pfad-Fallback für Unterverzeichnisse, falls nötig
+                return fetch('/EasyElectronics/frontend/navbar.html');
+            }
+            return response;
+        })
+        .then(response => response.text())
+        .then(html => {
+            container.innerHTML = html;
+            highlightActiveLink();
+            initDragAndDrop();
+            refreshCartBadge();
+        })
+        .catch(err => console.error("Fehler beim Laden der Navbar:", err));
+});
+
+// Funktion zum Hervorheben des aktiven Links
+function highlightActiveLink() {
+    const path = window.location.pathname;
+    const page = path.substring(path.lastIndexOf('/') + 1);
+
+    // Alle Links zurücksetzen
+    const links = {
+        'index.html': document.getElementById('nav-home'),
+        'login.html': document.getElementById('nav-login'),
+        'register.html': document.getElementById('nav-register')
+    };
+
+    // Standardmäßig Home aktivieren
+    let activeLink = links['index.html'];
+
+    if (page === 'login.html') {
+        activeLink = links['login.html'];
+    } else if (page === 'register.html') {
+        activeLink = links['register.html'];
+    } else if (page === 'cart.html') {
+        // Warenkorb aktiv -> Icon-Button leuchtend machen
+        const cartBtn = document.getElementById('cart-dropzone');
+        if (cartBtn) cartBtn.style.background = 'var(--primary-color)';
+        activeLink = null;
+    }
+
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
+}
+
+// Global verfügbare Funktion zur Aktualisierung des Badges
+window.refreshCartBadge = function() {
+    fetch('/EasyElectronics/backend/api/cart.php')
+        .then(res => res.json())
+        .then(cart => {
+            window.updateCartBadge(cart.total_items);
+        })
+        .catch(err => console.error("Fehler beim Laden des Warenkorb-Zählers:", err));
+};
+
+// Global verfügbare Funktion zur visuellen Animation und Änderung des Badges
+window.updateCartBadge = function(count) {
+    const badge = document.getElementById('cart-count');
+    if (badge) {
+        const oldCount = parseInt(badge.textContent) || 0;
+        badge.textContent = count;
+
+        // Wenn sich die Anzahl erhöht hat, Bouncing-Animation triggern
+        if (count !== oldCount) {
+            badge.classList.remove('pop-animation');
+            void badge.offsetWidth; // Reflow triggern zur Animation-Reinitialisierung
+            badge.classList.add('pop-animation');
+        }
+    }
+};
+
+// Drag & Drop Initialisierung auf dem Warenkorb-Icon
+function initDragAndDrop() {
+    const dropzone = document.getElementById('cart-dropzone');
+    if (!dropzone) return;
+
+    // dragover: Verhindert Standardverhalten, um das Ablegen zu ermöglichen
+    dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('drag-over');
+    });
+
+    // dragleave: Entfernt das optische Highlight
+    dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('drag-over');
+    });
+
+    // drop: Liest Daten aus und fügt Produkt hinzu
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('drag-over');
+
+        const productId = e.dataTransfer.getData('text/plain');
+        if (productId) {
+            addProductToCartViaDrag(productId);
+        }
+    });
+}
+
+// AJAX-Call zum Hinzufügen bei Drag & Drop
+function addProductToCartViaDrag(productId) {
+    fetch('/EasyElectronics/backend/api/cart.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'add',
+            product_id: parseInt(productId)
+        })
+    })
+    .then(res => res.json())
+    .then(cart => {
+        if (cart.error) {
+            console.error(cart.error);
+        } else {
+            window.updateCartBadge(cart.total_items);
+            
+            // Falls wir uns auf der Warenkorb-Seite befinden, laden wir diese ebenfalls neu
+            if (window.location.pathname.includes('cart.html') && typeof window.loadCartItems === 'function') {
+                window.loadCartItems();
+            }
+        }
+    })
+    .catch(err => console.error("Fehler beim Hinzufügen des Produkts via Drag:", err));
+}
