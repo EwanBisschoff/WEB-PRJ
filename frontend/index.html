@@ -9,27 +9,33 @@
 </head>
 <body>
 
-    <!-- Dynamischer Header/Navbar Container -->
-    <header id="navbar-container"></header>
+<!-- Dynamischer Header/Navbar Container -->
+<header id="navbar-container"></header>
 
-    <main class="container">
-        <h1>EasyElectronics Webshop</h1>
-        
-        <!-- Kategoriefilter -->
-        <div class="filter-container">
-            <select id="categorySelect" class="custom-select" aria-label="Produktkategorie filtern">
+<main class="container">
+    <h1>EasyElectronics Webshop</h1>
+
+    <!-- Kategoriefilter -->
+    <div class="filter-container" style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 250px;">
+            <input type="text" id="searchInput" class="custom-select" placeholder="Produkte live suchen..." aria-label="Produkte durchsuchen" style="width: 100%; box-sizing: border-box;">
+        </div>
+
+        <div style="min-width: 150px;">
+            <select id="categorySelect" class="custom-select" aria-label="Produktkategorie filtern" style="width: 100%;">
                 <option value="Elektronik">Elektronik</option>
                 <option value="Audio">Audio</option>
             </select>
         </div>
+    </div>
 
-        <!-- Produkt-Grid -->
-        <section id="products" aria-label="Produktkatalog"></section>
-    </main>
+    <!-- Produkt-Grid -->
+    <section id="products" aria-label="Produktkatalog"></section>
+</main>
 
-    <!-- Globaler Navbar-Controller -->
-    <script src="js/navbar.js"></script>
-    <!-- Startseiten-Controller -->
-    <script src="js/app.js"></script>
+<!-- Globaler Navbar-Controller -->
+<script src="js/navbar.js"></script>
+<!-- Startseiten-Controller -->
+<script src="js/app.js"></script>
 </body>
 </html>
