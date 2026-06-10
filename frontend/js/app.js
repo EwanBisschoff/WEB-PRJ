@@ -22,7 +22,7 @@ function loadProducts(category = 'Elektronik', search = '') {
     const encodedCategory = encodeURIComponent(category);
     const encodedSearch = encodeURIComponent(search);
 
-    fetch(`/EasyElectronics/backend/api/products.php?category=${encodedCategory}&search=${encodedSearch}`)
+    fetch(`/FH_SEM04/WebScripting/EasyElectronics/backend/api/products.php?category=${encodedCategory}&search=${encodedSearch}`)
         .then(response => {
             if (!response.ok) throw new Error("Fehler beim Laden der Produkte");
             return response.json();
@@ -153,10 +153,10 @@ loadProducts();
 // Kategorie-Filter Event Listener
 document.getElementById('categorySelect').addEventListener('change', triggerFilteredLoad);
 
-// Continuous Search Event Listener mit Debounce (300ms)
+// Continuous Search Event Listener mit Debounce (500ms)
 document.getElementById('searchInput').addEventListener('input', function() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
         triggerFilteredLoad();
-    }, 300); // Wartet 300ms nach dem letzten Tastendruck, danach suche
+    }, 500); // Wartet 500ms nach dem letzten Tastendruck, danach suche
 });
