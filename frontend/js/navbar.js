@@ -61,7 +61,7 @@ function highlightActiveLink() {
 
 // Global verfügbare Funktion zur Aktualisierung des Badges
 window.refreshCartBadge = function() {
-    fetch('/EasyElectronics/backend/api/cart.php')
+    fetch('/FH_SEM04/WebScripting/EasyElectronics/backend/api/cart.php')
         .then(res => res.json())
         .then(cart => {
             window.updateCartBadge(cart.total_items);

@@ -4,27 +4,26 @@ class DBAccess {
 
 public function connect(){
 
-try {
+    try {
 
-$pdo = new PDO(
-"mysql:host=127.0.0.1;dbname=webshop",
-"root",
-""
-);
+        $pdo = new PDO(
+        "mysql:host=127.0.0.1;dbname=webshop",
+        "root",
+        ""
+        );
 
-$pdo->setAttribute(
-PDO::ATTR_ERRMODE,
-PDO::ERRMODE_EXCEPTION
-);
+        $pdo->setAttribute(
+        PDO::ATTR_ERRMODE,
+        PDO::ERRMODE_EXCEPTION
+        );
 
-return $pdo;
+        return $pdo;
 
-} catch(PDOException $e){
+        } catch(PDOException $e){
 
-die($e->getMessage());
+        die($e->getMessage());
 
+        }
+    }
 }
-}
-}
-
 ?>
