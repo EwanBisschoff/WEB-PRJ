@@ -1,8 +1,12 @@
 // Startseiten Produkt-Katalog Controller (EasyElectronics)
 
-function loadProducts(category = 'Elektronik') {
+// Variable für das Such-Debounce (verhindert Spam)
+let searchTimeout = null;
+
+// Erweitert um den Suchparameter (Standardwert ist leer)
+function loadProducts(category = 'Elektronik', search = '') {
     const productsContainer = document.getElementById('products');
-    
+
     // Skeleton Loader / Lade-Animation für Premium-Feel
     productsContainer.innerHTML = `
         <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
@@ -14,32 +18,37 @@ function loadProducts(category = 'Elektronik') {
         </div>
     `;
 
-    fetch(`/EasyElectronics/backend/api/products.php?category=${category}`)
+    // API-Query erweitern: Kategorie UND Suchbegriff mit AJAX
+    const encodedCategory = encodeURIComponent(category);
+    const encodedSearch = encodeURIComponent(search);
+
+    fetch(`/FH_SEM04/WebScripting/EasyElectronics/backend/api/products.php?category=${encodedCategory}&search=${encodedSearch}`)
         .then(response => {
             if (!response.ok) throw new Error("Fehler beim Laden der Produkte");
             return response.json();
         })
         .then(data => {
+            // Wenn die Filterung keine Treffer erzielt
             if (data.length === 0) {
                 productsContainer.innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-                        <p>Keine Produkte in dieser Kategorie gefunden.</p>
+                        <p>Keine Produkte für Ihre Suche oder Filterung gefunden.</p>
                     </div>
                 `;
                 return;
             }
 
             productsContainer.innerHTML = '';
-            
+
             data.forEach((product, index) => {
                 const card = document.createElement('div');
                 card.className = 'product';
                 card.setAttribute('draggable', 'true');
                 card.style.animation = `card-entrance 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.05}s both`;
-                
+
                 // SVG Grafik-Icons passend zur Kategorie
                 const isAudio = product.category.toLowerCase() === 'audio';
-                const productIcon = isAudio 
+                const productIcon = isAudio
                     ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>`
                     : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`;
 
@@ -64,7 +73,7 @@ function loadProducts(category = 'Elektronik') {
                     </div>
                 `;
 
-                // 3D-Leuchteffekt bei Mausbewegung (Premium Interaction)
+                // 3D-Leuchteffekt bei Mausbewegung
                 card.addEventListener('mousemove', (e) => {
                     const rect = card.getBoundingClientRect();
                     const x = e.clientX - rect.left;
@@ -76,10 +85,7 @@ function loadProducts(category = 'Elektronik') {
                 // HTML5 Drag & Drop: Drag Start
                 card.addEventListener('dragstart', (e) => {
                     e.dataTransfer.setData('text/plain', product.id);
-                    // Drag-Bild-Transparenz
                     card.classList.add('dragging');
-                    
-                    // Optisches Feedback anpassen
                     e.dataTransfer.effectAllowed = 'copy';
                 });
 
@@ -119,24 +125,38 @@ function addProductToCart(productId) {
             product_id: parseInt(productId)
         })
     })
-    .then(res => res.json())
-    .then(cart => {
-        if (cart.error) {
-            alert("Fehler: " + cart.error);
-        } else {
-            // Live-Badge im globalen Header aktualisieren
-            if (typeof window.updateCartBadge === 'function') {
-                window.updateCartBadge(cart.total_items);
+        .then(res => res.json())
+        .then(cart => {
+            if (cart.error) {
+                alert("Fehler: " + cart.error);
+            } else {
+                if (typeof window.updateCartBadge === 'function') {
+                    window.updateCartBadge(cart.total_items);
+                }
             }
-        }
-    })
-    .catch(err => console.error("AJAX-Fehler beim Hinzufügen zum Warenkorb:", err));
+        })
+        .catch(err => console.error("AJAX-Fehler beim Hinzufügen zum Warenkorb:", err));
 }
+
+// Hilfsfunktion: Fragt die aktuellen UI-Filter-Werte ab und startet das Laden
+function triggerFilteredLoad() {
+    const currentCategory = document.getElementById('categorySelect').value;
+    const currentSearch = document.getElementById('searchInput').value;
+    loadProducts(currentCategory, currentSearch);
+}
+
+// --- EVENT LISTENERS ---
 
 // Initialisierung bei Seitenstart
 loadProducts();
 
 // Kategorie-Filter Event Listener
-document.getElementById('categorySelect').addEventListener('change', function() {
-    loadProducts(this.value);
+document.getElementById('categorySelect').addEventListener('change', triggerFilteredLoad);
+
+// Continuous Search Event Listener mit Debounce (500ms)
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        triggerFilteredLoad();
+    }, 500); // Wartet 500ms nach dem letzten Tastendruck, danach suche
 });
