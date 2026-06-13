@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email` VARCHAR(255) NOT NULL UNIQUE,
   `username` VARCHAR(100) NOT NULL UNIQUE,
   `password` VARCHAR(255) NOT NULL,
-  `role` VARCHAR(50) NOT NULL DEFAULT 'user'
+  `role` VARCHAR(50) NOT NULL DEFAULT 'user',
+  `is_blocked` TINYINT(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -25,7 +26,8 @@ CREATE TABLE IF NOT EXISTS `products` (
   `description` TEXT DEFAULT NULL,
   `price` DECIMAL(10,2) NOT NULL,
   `image` VARCHAR(255) DEFAULT NULL,
-  `category` VARCHAR(100) NOT NULL
+  `category` VARCHAR(100) NOT NULL,
+  `rating` DECIMAL(3,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -74,7 +76,8 @@ CREATE TABLE IF NOT EXISTS `vouchers` (
   `code` VARCHAR(50) NOT NULL UNIQUE,
   `value` DECIMAL(10,2) NOT NULL,          -- Aktueller Restwert
   `original_value` DECIMAL(10,2) NOT NULL, -- Ursprünglicher Betrag
-  `is_redeemed` TINYINT(1) DEFAULT 0        -- 1 = vollständig eingelöst
+  `is_redeemed` TINYINT(1) DEFAULT 0,       -- 1 = vollständig eingelöst
+  `expiry_date` DATE DEFAULT NULL          -- Ablaufdatum (EPIC 9)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

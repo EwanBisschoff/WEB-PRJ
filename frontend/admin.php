@@ -1,0 +1,429 @@
+<?php
+// Admin-Bereich Einstiegspunkt (EasyElectronics)
+session_start();
+
+// Überprüfen, ob der Benutzer ein Administrator ist (EPIC 9)
+// Wenn nicht, wird eine echte 404-Meldung zurückgegeben, um die Existenz der Seite komplett zu verbergen
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+    header("HTTP/1.0 404 Not Found");
+    ?>
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+<p>The requested URL was not found on this server.</p>
+<hr>
+<address>Apache/2.4.58 (Win64) OpenSSL/3.1.3 PHP/8.2.12 Server at localhost Port 80</address>
+</body></html>
+    <?php
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Administrationsoberfläche von EasyElectronics. Verwalten Sie Produkte, Gutscheine, Kundenkonten und Bestellungen.">
+    <title>Admin-Bereich | EasyElectronics</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Zusätzliche Admin-spezifische Stile */
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        @media (min-width: 992px) {
+            .admin-layout {
+                grid-template-columns: 240px 1fr;
+            }
+        }
+        .admin-menu {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 20px;
+            height: fit-content;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        @media (min-width: 992px) {
+            .admin-menu {
+                flex-direction: column;
+                overflow-x: visible;
+                white-space: normal;
+            }
+        }
+        .admin-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 30px;
+            min-height: 500px;
+            backdrop-filter: blur(5px);
+        }
+        .admin-table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        table.admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        table.admin-table th {
+            border-bottom: 2px solid var(--border-color);
+            padding: 12px 15px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        table.admin-table td {
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 15px;
+            color: var(--text-primary);
+        }
+        table.admin-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success-color);
+        }
+        .status-expired {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--danger-color);
+        }
+        .status-redeemed {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+        }
+        .status-blocked {
+            background: rgba(244, 63, 94, 0.2);
+            color: var(--danger-color);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+        /* Admin Formulare in Modals */
+        .admin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(8, 12, 20, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .admin-modal-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: card-entrance 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        .admin-modal-box h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .image-preview-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            border: 1px dashed var(--border-color);
+            background: rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .image-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dynamischer Header/Navbar Container -->
+    <header id="navbar-container"></header>
+
+    <main class="container">
+        <h1>Admin-Bereich</h1>
+
+        <div class="admin-layout">
+            <!-- Linke Spalte: Admin-Menü -->
+            <aside class="admin-menu" aria-label="Admin-Menü">
+                <button class="tab-btn active" data-target="admin-products">
+                    Produkte verwalten
+                </button>
+                <button class="tab-btn" data-target="admin-vouchers">
+                    Gutscheine verwalten
+                </button>
+                <button class="tab-btn" data-target="admin-users">
+                    Kunden verwalten
+                </button>
+            </aside>
+
+            <!-- Rechte Spalte: Tab-Inhalte -->
+            <section class="admin-content">
+                
+                <!-- Tab 1: Produkte -->
+                <div id="admin-products" class="tab-panel active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0; font-size: 1.4rem;">Produktkatalog</h2>
+                        <button id="btn-add-product" class="btn btn-primary">
+                            + Neues Produkt erstellen
+                        </button>
+                    </div>
+
+                    <div class="admin-table-container">
+                        <table class="admin-table" aria-label="Produkt-Tabelle">
+                            <thead>
+                                <tr>
+                                    <th>Bild</th>
+                                    <th>Name</th>
+                                    <th>Kategorie</th>
+                                    <th>Preis</th>
+                                    <th>Bewertung</th>
+                                    <th style="text-align: right;">Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-products-body">
+                                <!-- Dynamisch befüllt -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Gutscheine -->
+                <div id="admin-vouchers" class="tab-panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0; font-size: 1.4rem;">Gutscheincodes</h2>
+                        <button id="btn-add-voucher" class="btn btn-primary">
+                            + Neuen Gutschein erstellen
+                        </button>
+                    </div>
+
+                    <div class="admin-table-container">
+                        <table class="admin-table" aria-label="Gutschein-Tabelle">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Restwert</th>
+                                    <th>Originalwert</th>
+                                    <th>Ablaufdatum</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-vouchers-body">
+                                <!-- Dynamisch befüllt -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Kunden -->
+                <div id="admin-users" class="tab-panel">
+                    <h2 style="margin-bottom: 20px; font-size: 1.4rem;">Registrierte Kundenkonten</h2>
+                    
+                    <div class="admin-table-container">
+                        <table class="admin-table" aria-label="Kunden-Tabelle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Benutzername</th>
+                                    <th>E-Mail</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-users-body">
+                                <!-- Dynamisch befüllt -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal: Produkt erstellen / bearbeiten -->
+    <div id="modal-product" class="admin-modal">
+        <div class="admin-modal-box">
+            <h3 id="modal-product-title">Neues Produkt erstellen</h3>
+            <form id="form-product" style="max-width: 100%; margin: 0; padding: 0; background: transparent; border: none; box-shadow: none;">
+                <input type="hidden" id="product-id">
+                
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
+                    <label for="product-name" style="font-weight: 500;">Produktname</label>
+                    <input type="text" id="product-name" placeholder="z. B. StudioSonic Kopfhörer" required>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
+                    <label for="product-description" style="font-weight: 500;">Beschreibung</label>
+                    <textarea id="product-description" rows="3" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); padding: 12px; font-family: var(--font-main); font-size: 0.95rem; resize: vertical;" placeholder="Produktbeschreibung..."></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="product-price" style="font-weight: 500;">Preis (€)</label>
+                        <input type="number" id="product-price" step="0.01" min="0.01" placeholder="99.99" required>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="product-rating" style="font-weight: 500;">Bewertung (1.00 - 5.00)</label>
+                        <input type="number" id="product-rating" step="0.1" min="1.0" max="5.0" placeholder="4.5">
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
+                    <label for="product-category" style="font-weight: 500;">Kategorie</label>
+                    <select id="product-category" class="custom-select" style="width: 100%; padding: 10px 40px 10px 15px;">
+                        <option value="Elektronik">Elektronik</option>
+                        <option value="Audio">Audio</option>
+                    </select>
+                </div>
+
+                <!-- Bild Upload -->
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 25px;">
+                    <label style="font-weight: 500;">Produktbild</label>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div id="image-preview" class="image-preview-box">
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Kein Bild</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1;">
+                            <input type="file" id="product-image-file" accept="image/png, image/jpeg, image/webp" style="display: none;">
+                            <button type="button" id="btn-trigger-upload" class="btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-primary); font-size: 0.85rem; padding: 8px 16px;">
+                                Datei auswählen
+                            </button>
+                            <input type="hidden" id="product-image-path">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Erlaubt: PNG, JPG, WEBP (max. 5MB)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                    <button type="button" id="btn-close-product-modal" class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary);">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Gutschein erstellen -->
+    <div id="modal-voucher" class="admin-modal">
+        <div class="admin-modal-box" style="max-width: 450px;">
+            <h3>Neuen Gutschein erstellen</h3>
+            <form id="form-voucher" style="max-width: 100%; margin: 0; padding: 0; background: transparent; border: none; box-shadow: none;">
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
+                    <label for="voucher-code" style="font-weight: 500;">Gutscheincode (5-stellig, optional)</label>
+                    <input type="text" id="voucher-code-input" placeholder="Wird generiert falls leer" maxlength="5" style="text-transform: uppercase;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Lassen Sie das Feld leer, um einen zufälligen Code zu generieren.</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
+                    <label for="voucher-value" style="font-weight: 500;">Gutscheinbetrag (€)</label>
+                    <input type="number" id="voucher-value" step="0.01" min="0.01" placeholder="50.00" required>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 25px;">
+                    <label for="voucher-expiry" style="font-weight: 500;">Ablaufdatum (Optional)</label>
+                    <input type="date" id="voucher-expiry">
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                    <button type="button" id="btn-close-voucher-modal" class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary);">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Erstellen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Bestellungen eines Kunden und deren Bearbeitung -->
+    <div id="modal-customer-orders" class="admin-modal">
+        <div class="admin-modal-box" style="max-width: 800px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px;">
+                <h3 id="orders-modal-title" style="margin: 0; border: none; padding: 0;">Bestellungen von [Kunde]</h3>
+                <button type="button" id="btn-close-orders-modal" class="btn" style="padding: 5px 10px; background: transparent; font-size: 1.5rem; line-height: 1; color: var(--text-muted);">&times;</button>
+            </div>
+            
+            <div id="customer-orders-container" style="display: flex; flex-direction: column; gap: 20px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Bestellungen werden geladen -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Bestellung bearbeiten (Artikel hinzufügen / entfernen) -->
+    <div id="modal-edit-order" class="admin-modal">
+        <div class="admin-modal-box" style="max-width: 650px; border-color: var(--primary-color);">
+            <h3 style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Bestellung #<span id="edit-order-id-label"></span> bearbeiten</span>
+            </h3>
+            
+            <div style="margin-bottom: 20px;">
+                <h4 style="font-size: 0.95rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">Aktuelle Bestellpositionen</h4>
+                <div id="order-items-editor-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                    <!-- Artikel der Bestellung -->
+                </div>
+
+                <h4 style="font-size: 0.95rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">Artikel hinzufügen</h4>
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: end;">
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="add-item-select" style="font-size: 0.8rem; color: var(--text-muted);">Produkt</label>
+                        <select id="add-item-select" class="custom-select" style="width: 100%; padding: 8px 40px 8px 12px; font-size: 0.85rem;">
+                            <!-- Produkte geladen per JS -->
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="add-item-qty" style="font-size: 0.8rem; color: var(--text-muted);">Menge</label>
+                        <input type="number" id="add-item-qty" value="1" min="1" max="99" style="padding: 8px 12px; font-size: 0.85rem;">
+                    </div>
+                    <button type="button" id="btn-add-item-to-order" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem; height: 35px;">
+                        Hinzufügen
+                    </button>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 15px;">
+                <button type="button" id="btn-close-edit-order-modal" class="btn btn-primary" style="padding: 8px 20px;">
+                    Fertig
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Globaler Navbar-Controller -->
+    <script src="js/navbar.js"></script>
+    <!-- Admin-Bereich Controller -->
+    <script src="js/admin.js"></script>
+</body>
+</html>

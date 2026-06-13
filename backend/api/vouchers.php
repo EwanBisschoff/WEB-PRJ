@@ -37,14 +37,22 @@ $db = new DBAccess();
 $conn = $db->connect();
 
 try {
-    // Gutschein aus DB abrufen
-    $stmt = $conn->prepare("SELECT id, code, value, original_value, is_redeemed FROM vouchers WHERE code = ?");
+    // Gutschein aus DB abrufen (inkl. Expiry Date)
+    $stmt = $conn->prepare("SELECT id, code, value, original_value, is_redeemed, expiry_date FROM vouchers WHERE code = ?");
     $stmt->execute([$code]);
     $voucher = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$voucher) {
         http_response_code(404);
         echo json_encode(["error" => "Gutscheincode ist ungültig."]);
+        exit;
+    }
+
+    // Ablaufdatum überprüfen (EPIC 9)
+    $currentDate = date('Y-m-d');
+    if ($voucher['expiry_date'] !== null && $voucher['expiry_date'] < $currentDate) {
+        http_response_code(400);
+        echo json_encode(["error" => "Dieser Gutschein ist abgelaufen."]);
         exit;
     }
 

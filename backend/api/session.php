@@ -10,7 +10,8 @@ echo json_encode([
 
 "loggedIn" => true,
 "id" => $_SESSION['user']['id'],
-"username" => $_SESSION['user']['username']
+"username" => $_SESSION['user']['username'],
+"role" => $_SESSION['user']['role']
 
 ]);
 

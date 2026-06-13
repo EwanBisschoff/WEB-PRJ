@@ -26,6 +26,14 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if($user && password_verify($data->password, $user['password'])){
 
+if (intval($user['is_blocked']) === 1) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Dieses Konto wurde gesperrt. Bitte kontaktieren Sie den Administrator."
+    ]);
+    exit;
+}
+
 $_SESSION['user'] = $user;
 $userId = intval($user['id']);
 

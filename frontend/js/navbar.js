@@ -157,8 +157,15 @@ function checkSessionState(container) {
                 if (loginLink) loginLink.parentElement.remove();
                 if (registerLink) registerLink.parentElement.remove();
 
+                // Admin Link prüfen (EPIC 9)
+                let adminLinkHtml = '';
+                if (session.role === 'admin') {
+                    adminLinkHtml = `<li><a href="admin.php" id="nav-admin">Admin-Bereich</a></li>`;
+                }
+
                 // Eigene Links und Begrüßung für eingeloggten Benutzer hinzufügen
                 navLinks.insertAdjacentHTML('beforeend', `
+                    ${adminLinkHtml}
                     <li><a href="account.html" id="nav-account">Mein Konto</a></li>
                     <li class="nav-user-greeting" style="color: var(--text-primary); font-weight: 500; padding: 8px 16px;">Hallo, ${session.username}!</li>
                     <li><a href="#" id="nav-logout" style="color: var(--danger-color); cursor: pointer;">Abmelden</a></li>
@@ -177,12 +184,15 @@ function checkSessionState(container) {
                     });
                 }
                 
-                // Aktiven Zustand für "Mein Konto" markieren
+                // Aktiven Zustand markieren
                 const path = window.location.pathname;
                 const page = path.substring(path.lastIndexOf('/') + 1);
                 if (page === 'account.html') {
                     const accountLink = container.querySelector('#nav-account');
                     if (accountLink) accountLink.classList.add('active');
+                } else if (page === 'admin.php') {
+                    const adminLink = container.querySelector('#nav-admin');
+                    if (adminLink) adminLink.classList.add('active');
                 }
             }
         })

@@ -93,7 +93,7 @@ try {
     $finalTotal = $subtotal;
 
     if (!empty($voucherCode)) {
-        $stmtVoucher = $conn->prepare("SELECT id, code, value, original_value, is_redeemed FROM vouchers WHERE code = ? FOR UPDATE");
+        $stmtVoucher = $conn->prepare("SELECT id, code, value, original_value, is_redeemed, expiry_date FROM vouchers WHERE code = ? FOR UPDATE");
         $stmtVoucher->execute([$voucherCode]);
         $voucher = $stmtVoucher->fetch(PDO::FETCH_ASSOC);
 
@@ -101,6 +101,15 @@ try {
             $conn->rollBack();
             http_response_code(400);
             echo json_encode(["error" => "Der eingegebene Gutscheincode ist ungültig."]);
+            exit;
+        }
+
+        // Ablaufdatum überprüfen (EPIC 9)
+        $currentDate = date('Y-m-d');
+        if ($voucher['expiry_date'] !== null && $voucher['expiry_date'] < $currentDate) {
+            $conn->rollBack();
+            http_response_code(400);
+            echo json_encode(["error" => "Dieser Gutschein ist abgelaufen."]);
             exit;
         }
 
