@@ -6,7 +6,24 @@
   <component name="ChangeListManager">
     <list default="true" id="95ba7e9d-e66e-4310-9048-eab5ba881dca" name="Changes" comment="Suchleiste gefixed, Pfade noch fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/account.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/account.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/admin.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/cart.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/cart.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/checkout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/checkout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/invoice.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/invoice.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/js/account.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/account.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/js/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/admin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/js/cart.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/cart.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/js/checkout.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/checkout.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/js/invoice.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/invoice.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/js/navbar.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/navbar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/js/orders.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/orders.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/orders.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/orders.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/register.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,6 +70,9 @@
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3,
@@ -111,6 +131,10 @@
       <workItem from="1781094739412" duration="651000" />
       <workItem from="1781095740323" duration="3018000" />
       <workItem from="1781336953642" duration="940000" />
+      <workItem from="1781339932182" duration="1896000" />
+      <workItem from="1781341851458" duration="140000" />
+      <workItem from="1781342015434" duration="388000" />
+      <workItem from="1781342414795" duration="1159000" />
     </task>
     <task id="LOCAL-00001" summary="Suche fertig">
       <option name="closed" value="true" />

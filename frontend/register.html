@@ -16,9 +16,9 @@
         <h1>Konto erstellen</h1>
 
         <form id="registerForm" aria-label="Registrierungsformular">
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label for="salutation" style="font-weight: 500;">Anrede</label>
-                <select id="salutation" required style="padding: 10px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.2); color: var(--text-primary);">
+            <div class="form-group">
+                <label for="salutation" class="form-label">Anrede</label>
+                <select id="salutation" required class="custom-select form-select-custom w-100">
                     <option value="" disabled selected>Anrede wählen</option>
                     <option value="Herr">Herr</option>
                     <option value="Frau">Frau</option>
@@ -26,70 +26,70 @@
                 </select>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label for="firstname" style="font-weight: 500;">Vorname</label>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label for="firstname" class="form-label">Vorname</label>
                     <input type="text" id="firstname" placeholder="Vorname" required autocomplete="given-name">
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label for="lastname" style="font-weight: 500;">Nachname</label>
+                <div class="form-group">
+                    <label for="lastname" class="form-label">Nachname</label>
                     <input type="text" id="lastname" placeholder="Nachname" required autocomplete="family-name">
                 </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label for="address" style="font-weight: 500;">Adresse</label>
+            <div class="form-group">
+                <label for="address" class="form-label">Adresse</label>
                 <input type="text" id="address" placeholder="Musterstraße 123" required>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label for="zip" style="font-weight: 500;">PLZ</label>
+            <div class="form-row-1-2">
+                <div class="form-group">
+                    <label for="zip" class="form-label">PLZ</label>
                     <input type="text" id="zip" placeholder="12345" required>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label for="city" style="font-weight: 500;">Ort</label>
+                <div class="form-group">
+                    <label for="city" class="form-label">Ort</label>
                     <input type="text" id="city" placeholder="Musterstadt" required>
                 </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label for="email" style="font-weight: 500;">E-Mail-Adresse</label>
+            <div class="form-group">
+                <label for="email" class="form-label">E-Mail-Adresse</label>
                 <input type="email" id="email" placeholder="E-Mail" required autocomplete="email">
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label for="username" style="font-weight: 500;">Username (Benutzername)</label>
+            <div class="form-group">
+                <label for="username" class="form-label">Username (Benutzername)</label>
                 <input type="text" id="username" placeholder="Username" required autocomplete="username">
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label for="password" style="font-weight: 500;">Passwort</label>
+            <div class="form-group">
+                <label for="password" class="form-label">Passwort</label>
                 <input type="password" id="password" placeholder="Passwort" required autocomplete="new-password">
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label for="password2" style="font-weight: 500;">Passwort wiederholen</label>
+            <div class="form-group">
+                <label for="password2" class="form-label">Passwort wiederholen</label>
                 <input type="password" id="password2" placeholder="Passwort wiederholen" required autocomplete="new-password">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; border-top: 1px dashed var(--border-color); padding-top: 20px; margin-top: 10px;">
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label for="payment_provider" style="font-weight: 500;">Zahlungsart</label>
-                    <select id="payment_provider" required style="padding: 10px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.2); color: var(--text-primary);">
+            <div class="register-payment-section">
+                <div class="form-group">
+                    <label for="payment_provider" class="form-label">Zahlungsart</label>
+                    <select id="payment_provider" required class="custom-select form-select-custom w-100">
                         <option value="Visa">Visa</option>
                         <option value="MasterCard">MasterCard</option>
                         <option value="PayPal">PayPal</option>
                     </select>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label for="payment_details" id="payment_details_label" style="font-weight: 500;">Kartennummer</label>
+                <div class="form-group">
+                    <label for="payment_details" id="payment_details_label" class="form-label">Kartennummer</label>
                     <input type="text" id="payment_details" placeholder="z. B. 4500 1234 5678 9012" required>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" id="register-submit-btn" style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary mt-20" id="register-submit-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="8.5" cy="7" r="4"></circle>
@@ -100,7 +100,7 @@
             </button>
         </form>
 
-        <div id="status" style="text-align: center; margin-top: 15px; font-weight: 500;"></div>
+        <div id="status" class="text-center-status"></div>
     </main>
 
     <!-- Globaler Navbar-Controller -->

@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Authentifizierungsprüfung beim Laden der Seite
     checkAuthentication();
 
-    // 2. Tab-Navigation einrichten
+    // 2. Tab-Navigation einrichten (utils.js)
     setupTabs();
 
     // 3. Formular-Events binden
@@ -15,8 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function checkAuthentication() {
     fetch('../backend/api/session.php')
         .then(res => res.json())
-        .then(session => {
-            if (!session.loggedIn) {
+        .then(({ loggedIn }) => {
+            if (!loggedIn) {
                 // Wenn nicht angemeldet, zum Login weiterleiten
                 alert("Bitte melden Sie sich an, um Ihr Kundenkonto zu verwalten.");
                 window.location.href = 'login.html';
@@ -33,27 +33,6 @@ function checkAuthentication() {
         });
 }
 
-// Tab-Switching Funktionalität
-function setupTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabPanels = document.querySelectorAll('.tab-panel');
-
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const target = btn.getAttribute('data-target');
-
-            // Aktiven Button anpassen
-            tabButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // Aktives Panel anpassen
-            tabPanels.forEach(p => p.classList.remove('active'));
-            const targetPanel = document.getElementById(target);
-            if (targetPanel) targetPanel.classList.add('active');
-        });
-    });
-}
-
 function loadUserProfile() {
     fetch('../backend/api/user.php')
         .then(res => {
@@ -62,15 +41,24 @@ function loadUserProfile() {
         })
         .then(user => {
             document.getElementById('profile-salutation').value = user.salutation || 'Herr';
-            document.getElementById('profile-firstname').value = user.firstname || '';
-            document.getElementById('profile-lastname').value = user.lastname || '';
-            document.getElementById('profile-address').value = user.address || '';
-            document.getElementById('profile-zip').value = user.zip || '';
-            document.getElementById('profile-city').value = user.city || '';
-            document.getElementById('profile-email').value = user.email || '';
-            document.getElementById('profile-username').value = user.username || '';
+            document.getElementById('profile-firstname').value  = user.firstname  || '';
+            document.getElementById('profile-lastname').value   = user.lastname   || '';
+            document.getElementById('profile-address').value   = user.address    || '';
+            document.getElementById('profile-zip').value       = user.zip        || '';
+            document.getElementById('profile-city').value      = user.city       || '';
+            document.getElementById('profile-email').value     = user.email      || '';
+            document.getElementById('profile-username').value  = user.username   || '';
         })
         .catch(err => console.error(err));
+}
+
+// --- Payment helpers ----------------------------------------------------------
+
+/** Returns an emoji icon for a given payment provider string. */
+function getPaymentIcon(provider) {
+    if (provider === 'Visa' || provider === 'MasterCard') return '💳';
+    if (provider === 'PayPal') return '🅿️';
+    return '💵';
 }
 
 // Zahlungsarten verwalten (Laden, Hinzufügen, Löschen)
@@ -90,15 +78,8 @@ function loadPaymentMethods() {
             methods.forEach(method => {
                 const item = document.createElement('div');
                 item.className = 'payment-item';
-                
-                let icon = '';
-                if (method.provider === 'Visa' || method.provider === 'MasterCard') {
-                    icon = '💳';
-                } else if (method.provider === 'PayPal') {
-                    icon = '🅿️';
-                } else {
-                    icon = '💵';
-                }
+
+                const icon = getPaymentIcon(method.provider);
 
                 item.innerHTML = `
                     <div style="display: flex; flex-direction: column;">
@@ -131,9 +112,7 @@ function deletePaymentMethod(id) {
 
     fetch('../backend/api/payment_methods.php', {
         method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: parseInt(id) })
     })
     .then(res => res.json())
@@ -147,10 +126,10 @@ function deletePaymentMethod(id) {
     .catch(err => console.error("Fehler beim Löschen der Zahlungsart:", err));
 }
 
-// Neue Zahlungsart speichern (AJAX POST)
+// Neue Zahlungsart speichern (AJAX POST) — wird von setupPaymentFormToggle() (utils.js) aufgerufen
 function saveNewPaymentMethod() {
     const provider = document.getElementById('new-provider').value;
-    const details = document.getElementById('new-details').value.trim();
+    const details  = document.getElementById('new-details').value.trim();
 
     if (!details) {
         alert("Bitte füllen Sie die Details zur Zahlungsart aus.");
@@ -159,9 +138,7 @@ function saveNewPaymentMethod() {
 
     fetch('../backend/api/payment_methods.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider, details })
     })
     .then(res => res.json())
@@ -176,6 +153,24 @@ function saveNewPaymentMethod() {
         }
     })
     .catch(err => console.error("Fehler beim Hinzufügen der Zahlungsart:", err));
+}
+
+// --- Order history helpers ----------------------------------------------------
+// formatPrice() und formatOrderDate() werden von utils.js bereitgestellt.
+
+/**
+ * Builds the HTML for a single order item row.
+ * @param {{ name: string, quantity: number, line_total: number }} item
+ * @returns {string}
+ */
+function buildOrderItemRow(item) {
+    const { name, quantity, line_total } = item;
+    return `
+        <div class="order-item-row">
+            <span style="color: var(--text-primary); font-weight: 500;">${name} (x${quantity})</span>
+            <span style="font-weight: 600;">${formatPrice(line_total)}</span>
+        </div>
+    `;
 }
 
 // Bestellhistorie laden und rendern (EPIC 8)
@@ -193,41 +188,33 @@ function loadOrderHistory() {
 
             container.innerHTML = '';
             orders.forEach(order => {
+                const { id, order_date, total_price, discount, payment, voucher_code, items } = order;
+
                 const orderCard = document.createElement('article');
                 orderCard.className = 'order-card';
-                
+
                 // Formatiertes Datum und Beträge
-                const date = new Date(order.order_date).toLocaleDateString('de-DE', {
+                const date = new Date(order_date).toLocaleDateString('de-DE', {
                     day: '2-digit', month: '2-digit', year: 'numeric',
                     hour: '2-digit', minute: '2-digit'
                 });
-                const total = parseFloat(order.total_price).toFixed(2).replace('.', ',') + ' €';
-                const discount = parseFloat(order.discount).toFixed(2).replace('.', ',') + ' €';
+                const total             = formatPrice(total_price);
+                const discountFormatted = formatPrice(discount);
 
-                // Zahlungs-Icon
-                let payIcon = order.payment.provider === 'Visa' || order.payment.provider === 'MasterCard' ? '💳' : (order.payment.provider === 'PayPal' ? '🅿️' : '💵');
-
-                let tags = `<div class="info-tag">${payIcon} ${order.payment.provider} (${order.payment.details})</div>`;
-                if (order.voucher_code) {
-                    tags += `<div class="info-tag voucher">🏷️ Gutschein: ${order.voucher_code} (-${discount})</div>`;
+                // Zahlungs-Icon und Tags
+                const payIcon = getPaymentIcon(payment.provider);
+                let tags = `<div class="info-tag">${payIcon} ${payment.provider} (${payment.details})</div>`;
+                if (voucher_code) {
+                    tags += `<div class="info-tag voucher">🏷️ Gutschein: ${voucher_code} (-${discountFormatted})</div>`;
                 }
 
                 // Produkte auflisten
-                let itemsHtml = '';
-                order.items.forEach(item => {
-                    const lineTotal = parseFloat(item.line_total).toFixed(2).replace('.', ',') + ' €';
-                    itemsHtml += `
-                        <div class="order-item-row">
-                            <span style="color: var(--text-primary); font-weight: 500;">${item.name} (x${item.quantity})</span>
-                            <span style="font-weight: 600;">${lineTotal}</span>
-                        </div>
-                    `;
-                });
+                const itemsHtml = items.map(buildOrderItemRow).join('');
 
                 orderCard.innerHTML = `
                     <div class="order-header">
                         <div class="order-meta">
-                            <span style="font-weight: 700; color: var(--text-primary);">Bestellung #${order.id}</span>
+                            <span style="font-weight: 700; color: var(--text-primary);">Bestellung #${id}</span>
                             <span style="font-size: 0.8rem; color: var(--text-muted);">${date}</span>
                         </div>
                         <div class="order-total-block">
@@ -235,17 +222,17 @@ function loadOrderHistory() {
                             <span class="order-total-val" style="font-size: 1.25rem; font-weight: 700;">${total}</span>
                         </div>
                     </div>
-                    
+
                     <div class="order-payment-voucher-info">
                         ${tags}
                     </div>
-                    
+
                     <div class="order-items-grid">
                         ${itemsHtml}
                     </div>
-                    
+
                     <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                        <a href="invoice.html?order_id=${order.id}" target="_blank" class="btn" style="padding: 8px 16px; font-size: 0.85rem; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); color: var(--text-primary);">
+                        <a href="invoice.html?order_id=${id}" target="_blank" class="btn" style="padding: 8px 16px; font-size: 0.85rem; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); color: var(--text-primary);">
                             📄 Rechnung anzeigen / drucken
                         </a>
                     </div>
@@ -259,10 +246,10 @@ function loadOrderHistory() {
 
 // Formular-Zusammensetzung (Profil abspeichern und Passwortabfrage Modal)
 function setupForms() {
-    const profileForm = document.getElementById('profileForm');
-    const passwordModal = document.getElementById('password-modal');
-    const modalCancel = document.getElementById('modal-btn-cancel');
-    const modalConfirm = document.getElementById('modal-btn-confirm');
+    const profileForm        = document.getElementById('profileForm');
+    const passwordModal      = document.getElementById('password-modal');
+    const modalCancel        = document.getElementById('modal-btn-cancel');
+    const modalConfirm       = document.getElementById('modal-btn-confirm');
     const modalPasswordInput = document.getElementById('modal-password-input');
 
     let profilePendingData = null;
@@ -270,17 +257,17 @@ function setupForms() {
     if (profileForm && passwordModal) {
         profileForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            
+
             // Formulardaten sammeln
             profilePendingData = {
                 salutation: document.getElementById('profile-salutation').value,
-                firstname: document.getElementById('profile-firstname').value.trim(),
-                lastname: document.getElementById('profile-lastname').value.trim(),
-                address: document.getElementById('profile-address').value.trim(),
-                zip: document.getElementById('profile-zip').value.trim(),
-                city: document.getElementById('profile-city').value.trim(),
-                email: document.getElementById('profile-email').value.trim(),
-                username: document.getElementById('profile-username').value.trim()
+                firstname:  document.getElementById('profile-firstname').value.trim(),
+                lastname:   document.getElementById('profile-lastname').value.trim(),
+                address:    document.getElementById('profile-address').value.trim(),
+                zip:        document.getElementById('profile-zip').value.trim(),
+                city:       document.getElementById('profile-city').value.trim(),
+                email:      document.getElementById('profile-email').value.trim(),
+                username:   document.getElementById('profile-username').value.trim()
             };
 
             // Modal zur Sicherheitsüberprüfung einblenden (EPIC 8)
@@ -306,9 +293,7 @@ function setupForms() {
 
             fetch('../backend/api/user.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
             .then(res => {
@@ -319,11 +304,11 @@ function setupForms() {
             })
             .then(result => {
                 passwordModal.style.display = 'none';
-                
+
                 const status = document.getElementById('profile-status');
                 status.textContent = result.message;
                 status.style.color = 'var(--success-color)';
-                
+
                 // Header-Greeting über Session-Status aktualisieren
                 if (typeof window.refreshCartBadge === 'function') {
                     window.location.reload(); // Einfacher Reload aktualisiert den Navbar-Status
@@ -345,8 +330,8 @@ function setupForms() {
             e.preventDefault();
 
             const current_password = document.getElementById('password-current').value;
-            const new_password = document.getElementById('password-new').value;
-            const confirm = document.getElementById('password-confirm').value;
+            const new_password     = document.getElementById('password-new').value;
+            const confirm          = document.getElementById('password-confirm').value;
 
             if (new_password !== confirm) {
                 alert("Die neuen Passwörter stimmen nicht überein.");
@@ -355,9 +340,7 @@ function setupForms() {
 
             fetch('../backend/api/change_password.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ current_password, new_password })
             })
             .then(res => {
@@ -370,10 +353,10 @@ function setupForms() {
                 const status = document.getElementById('password-status');
                 status.textContent = result.message;
                 status.style.color = 'var(--success-color)';
-                
+
                 // Inputs leeren
                 document.getElementById('password-current').value = '';
-                document.getElementById('password-new').value = '';
+                document.getElementById('password-new').value     = '';
                 document.getElementById('password-confirm').value = '';
             })
             .catch(err => {
@@ -384,42 +367,6 @@ function setupForms() {
         });
     }
 
-    // Neue Zahlungsart speichern Toggle und Klick
-    const toggleNewPayBtn = document.getElementById('btn-toggle-new-pay');
-    const newPayForm = document.getElementById('new-payment-form');
-    if (toggleNewPayBtn && newPayForm) {
-        toggleNewPayBtn.addEventListener('click', () => {
-            const isVisible = newPayForm.style.display === 'block';
-            newPayForm.style.display = isVisible ? 'none' : 'block';
-            toggleNewPayBtn.textContent = isVisible ? '+ Neue Zahlungsart hinzufügen' : 'Abbrechen';
-        });
-    }
-
-    const savePayBtn = document.getElementById('btn-save-pay');
-    if (savePayBtn) {
-        savePayBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            saveNewPaymentMethod();
-        });
-    }
-
-    // Label-Text je nach ausgewähltem Anbieter anpassen
-    const providerSelect = document.getElementById('new-provider');
-    const detailsLabel = document.getElementById('new-details-label');
-    const detailsInput = document.getElementById('new-details');
-    if (providerSelect && detailsLabel && detailsInput) {
-        providerSelect.addEventListener('change', () => {
-            const val = providerSelect.value;
-            if (val === 'PayPal') {
-                detailsLabel.textContent = 'PayPal E-Mail-Adresse';
-                detailsInput.placeholder = 'beispiel@email.de';
-            } else if (val === 'Bankeinzug') {
-                detailsLabel.textContent = 'IBAN';
-                detailsInput.placeholder = 'DE89 •••• •••• •••• •••• ••';
-            } else {
-                detailsLabel.textContent = 'Kartennummer (letzte 4 Ziffern)';
-                detailsInput.placeholder = 'z. B. •••• 4321';
-            }
-        });
-    }
+    // Neue Zahlungsart: Toggle + Speichern (utils.js)
+    setupPaymentFormToggle(saveNewPaymentMethod);
 }

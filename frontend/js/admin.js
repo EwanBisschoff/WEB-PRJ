@@ -1,8 +1,12 @@
-// Admin-Bereich Controller (EasyElectronics)
+/**
+ * @fileoverview Admin-Bereich Controller (EasyElectronics)
+ * formatPrice() und formatOrderDate() werden von utils.js bereitgestellt.
+ */
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Tab-Wechsel einrichten
+    // Tab-Wechsel einrichten (setupTabs() aus utils.js)
     setupTabs();
+    setupAdminTabFromUrl();
 
     // Initiale Daten laden
     loadProducts();
@@ -70,38 +74,22 @@ let activeOrderEditCustomerId = 0;
 let activeOrderEditCustomerName = '';
 
 // Tab-Switching Funktionalität
-function setupTabs() {
+// setupTabs() wird von utils.js bereitgestellt.
+// Automatischer Wechsel zum per Parameter übergebenen Tab (EPIC 9 / Alignment)
+function setupAdminTabFromUrl() {
     const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabPanels = document.querySelectorAll('.tab-panel');
-
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const target = btn.getAttribute('data-target');
-
-            tabButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            tabPanels.forEach(p => p.classList.remove('active'));
-            const targetPanel = document.getElementById(target);
-            if (targetPanel) targetPanel.classList.add('active');
-        });
-    });
-
-    // Automatischer Wechsel zum per Parameter übergebenen Tab (EPIC 9 / Alignment)
     const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
-    if (tabParam) {
-        let targetId = '';
-        if (tabParam === 'products') targetId = 'admin-products';
-        else if (tabParam === 'vouchers') targetId = 'admin-vouchers';
-        else if (tabParam === 'customers') targetId = 'admin-users';
+    const tabParam  = urlParams.get('tab');
+    if (!tabParam) return;
 
-        if (targetId) {
-            const btn = Array.from(tabButtons).find(b => b.getAttribute('data-target') === targetId);
-            if (btn) {
-                btn.click();
-            }
-        }
+    let targetId = '';
+    if (tabParam === 'products')  targetId = 'admin-products';
+    else if (tabParam === 'vouchers')  targetId = 'admin-vouchers';
+    else if (tabParam === 'customers') targetId = 'admin-users';
+
+    if (targetId) {
+        const btn = Array.from(tabButtons).find(b => b.getAttribute('data-target') === targetId);
+        if (btn) btn.click();
     }
 }
 
@@ -206,9 +194,9 @@ function uploadProductImage() {
         }
         return res.json();
     })
-    .then(result => {
-        pathInput.value = result.image_path;
-        preview.innerHTML = `<img src="${result.image_path}" alt="Vorschau">`;
+    .then(({ image_path }) => {
+        pathInput.value = image_path;
+        preview.innerHTML = `<img src="${image_path}" alt="Vorschau">`;
     })
     .catch(err => {
         alert("Upload-Fehler: " + err.message);
@@ -302,25 +290,25 @@ function loadVouchers() {
             tbody.innerHTML = '';
             vouchers.forEach(voucher => {
                 const tr = document.createElement('tr');
-                
-                const val = parseFloat(voucher.value).toFixed(2).replace('.', ',') + ' €';
-                const origVal = parseFloat(voucher.original_value).toFixed(2).replace('.', ',') + ' €';
-                
-                const expiry = voucher.expiry_date ? new Date(voucher.expiry_date).toLocaleDateString('de-DE') : '-';
+                const { value, original_value, expiry_date, status, code, id } = voucher;
+
+                const val     = formatPrice(value);
+                const origVal = formatPrice(original_value);
+                const expiry  = expiry_date ? new Date(expiry_date).toLocaleDateString('de-DE') : '-';
                 
                 // Status-Badge stylen
                 let badgeClass = 'status-active';
-                if (voucher.status === 'abgelaufen') badgeClass = 'status-expired';
-                if (voucher.status === 'eingelöst') badgeClass = 'status-redeemed';
+                if (status === 'abgelaufen') badgeClass = 'status-expired';
+                if (status === 'eingelöst')  badgeClass = 'status-redeemed';
 
                 tr.innerHTML = `
-                    <td><code>${voucher.code}</code></td>
+                    <td><code>${code}</code></td>
                     <td><strong>${val}</strong></td>
                     <td>${origVal}</td>
                     <td>${expiry}</td>
-                    <td><span class="status-badge ${badgeClass}">${voucher.status}</span></td>
+                    <td><span class="status-badge ${badgeClass}">${status}</span></td>
                     <td style="text-align: right;">
-                        <button class="btn" onclick="deleteVoucher(${voucher.id})" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(244,63,94,0.1); color: var(--danger-color);">
+                        <button class="btn" onclick="deleteVoucher(${id})" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(244,63,94,0.1); color: var(--danger-color);">
                             Löschen
                         </button>
                     </td>
@@ -403,39 +391,37 @@ function loadCustomers() {
             tbody.innerHTML = '';
             users.forEach(user => {
                 const tr = document.createElement('tr');
-                
-                const fullName = user.firstname + ' ' + user.lastname;
-                
+                const { id, firstname, lastname, username, email, role, is_blocked } = user;
+                const isBlocked = Number(is_blocked) === 1;
+
+                const fullName = firstname + ' ' + lastname;
+
                 // Status-Badge stylen
-                let statusBadge = '';
-                if (intval(user.is_blocked) === 1) {
-                    statusBadge = `<span class="status-badge status-blocked">Gesperrt</span>`;
-                } else {
-                    statusBadge = `<span class="status-badge status-active">Aktiv</span>`;
-                }
+                const statusBadge = isBlocked
+                    ? `<span class="status-badge status-blocked">Gesperrt</span>`
+                    : `<span class="status-badge status-active">Aktiv</span>`;
 
                 // Block-Button Text anpassen
-                const isBlocked = intval(user.is_blocked) === 1;
-                const blockAction = isBlocked ? 'unblock' : 'block';
-                const blockBtnText = isBlocked ? 'Entsperren' : 'Sperren';
+                const blockAction   = isBlocked ? 'unblock' : 'block';
+                const blockBtnText  = isBlocked ? 'Entsperren' : 'Sperren';
                 const blockBtnColor = isBlocked ? 'var(--success-color)' : 'var(--danger-color)';
-                const blockBtnBg = isBlocked ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)';
+                const blockBtnBg    = isBlocked ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)';
 
                 // Nur Nicht-Admin Kunden bearbeitbar machen (Verhinderung von Selbstsperre)
-                const isAdmin = user.role === 'admin';
+                const isAdmin = role === 'admin';
                 const disabledAttr = isAdmin ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : '';
 
                 tr.innerHTML = `
-                    <td>#${user.id}</td>
+                    <td>#${id}</td>
                     <td><strong>${fullName}</strong> ${isAdmin ? '<span style="font-size:0.75rem; color:var(--primary-color);">[Admin]</span>' : ''}</td>
-                    <td>${user.username}</td>
-                    <td>${user.email}</td>
+                    <td>${username}</td>
+                    <td>${email}</td>
                     <td>${statusBadge}</td>
                     <td style="text-align: right;">
-                        <button class="btn" onclick="viewCustomerOrders(${user.id}, '${fullName}')" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.05); color: var(--text-primary);">
+                        <button class="btn" onclick="viewCustomerOrders(${id}, '${fullName}')" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.05); color: var(--text-primary);">
                             Bestellungen
                         </button>
-                        <button class="btn" onclick="toggleBlockUser(${user.id}, '${blockAction}')" ${disabledAttr} style="padding: 6px 12px; font-size: 0.8rem; background: ${blockBtnBg}; color: ${blockBtnColor};">
+                        <button class="btn" onclick="toggleBlockUser(${id}, '${blockAction}')" ${disabledAttr} style="padding: 6px 12px; font-size: 0.8rem; background: ${blockBtnBg}; color: ${blockBtnColor};">
                             ${blockBtnText}
                         </button>
                     </td>
@@ -446,10 +432,6 @@ function loadCustomers() {
         .catch(err => console.error("Fehler beim Laden der Kunden:", err));
 }
 
-// Hilfsfunktion: intval Emulation
-function intval(val) {
-    return parseInt(val) || 0;
-}
 
 // Benutzer sperren / entsperren
 window.toggleBlockUser = function(userId, action) {
@@ -507,23 +489,21 @@ window.viewCustomerOrders = function(userId, fullName) {
                 const orderCard = document.createElement('div');
                 orderCard.className = 'order-card';
                 orderCard.style.background = 'rgba(0,0,0,0.15)';
-                
-                const date = new Date(order.order_date).toLocaleDateString('de-DE', {
-                    day: '2-digit', month: '2-digit', year: 'numeric',
-                    hour: '2-digit', minute: '2-digit'
-                });
-                const total = parseFloat(order.total_price).toFixed(2).replace('.', ',') + ' €';
-                const discount = parseFloat(order.discount).toFixed(2).replace('.', ',') + ' €';
+                const { id: orderId, order_date, total_price, discount, payment, voucher_code, items } = order;
 
-                let tags = `<div class="info-tag">${order.payment.provider} (${order.payment.details})</div>`;
-                if (order.voucher_code) {
-                    tags += `<div class="info-tag voucher">🏷️ Gutschein: ${order.voucher_code} (-${discount})</div>`;
+                const date             = formatOrderDate(order_date);
+                const total            = formatPrice(total_price);
+                const discountFmt      = formatPrice(discount);
+
+                let tags = `<div class="info-tag">${payment.provider} (${payment.details})</div>`;
+                if (voucher_code) {
+                    tags += `<div class="info-tag voucher">🏷️ Gutschein: ${voucher_code} (-${discountFmt})</div>`;
                 }
 
                 // Artikelliste aufbauen
                 let itemsHtml = '';
-                order.items.forEach(item => {
-                    const lineTotal = parseFloat(item.line_total).toFixed(2).replace('.', ',') + ' €';
+                items.forEach(item => {
+                    const lineTotal = formatPrice(item.line_total);
                     itemsHtml += `
                         <div class="order-item-row" style="background: rgba(0,0,0,0.1);">
                             <span>${item.name} (x${item.quantity})</span>
@@ -535,7 +515,7 @@ window.viewCustomerOrders = function(userId, fullName) {
                 orderCard.innerHTML = `
                     <div class="order-header">
                         <div class="order-meta">
-                            <span style="font-weight: 700; color: var(--text-primary);">Bestellung #${order.id}</span>
+                            <span style="font-weight: 700; color: var(--text-primary);">Bestellung #${orderId}</span>
                             <span style="font-size: 0.8rem; color: var(--text-muted);">${date}</span>
                         </div>
                         <div class="order-total-block">
@@ -543,15 +523,15 @@ window.viewCustomerOrders = function(userId, fullName) {
                             <span class="order-total-val" style="font-size: 1.25rem; font-weight: 700;">${total}</span>
                         </div>
                     </div>
-                    
+
                     <div class="order-payment-voucher-info" style="margin-bottom: 12px;">
                         ${tags}
                     </div>
-                    
+
                     <div class="order-items-grid" style="margin-bottom: 15px;">
                         ${itemsHtml}
                     </div>
-                    
+
                     <div style="display: flex; gap: 10px; justify-content: flex-end;">
                         <button class="btn" onclick="openEditOrderModal(${JSON.stringify(order).replace(/"/g, '&quot;')})" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(99,102,241,0.1); color: var(--primary-color);">
                             ✏️ Bestellung bearbeiten
@@ -649,7 +629,7 @@ window.removeItemFromOrder = function(orderId, productId) {
         }
         return res.json();
     })
-    .then(result => {
+    .then(_result => {
         // Bestellung neu laden und Editor aktualisieren
         reloadActiveOrderAndEditor(orderId);
     })
@@ -688,7 +668,7 @@ function addItemToOrder() {
         }
         return res.json();
     })
-    .then(result => {
+    .then(_result => {
         // Menge zurücksetzen
         qtyInput.value = 1;
         // Bestellung neu laden

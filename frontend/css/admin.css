@@ -1,0 +1,267 @@
+/* Admin (admin.html) Styles */
+
+.admin-layout {
+    margin-top: 30px;
+    width: 100%;
+}
+
+.admin-menu {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 20px;
+    height: fit-content;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+@media (min-width: 992px) {
+    .admin-menu {
+        flex-direction: column;
+        overflow-x: visible;
+        white-space: normal;
+    }
+}
+
+.admin-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 30px;
+    min-height: 500px;
+    backdrop-filter: blur(5px);
+    width: 100%;
+}
+
+.admin-table-container {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+table.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+table.admin-table th {
+    border-bottom: 2px solid var(--border-color);
+    padding: 12px 15px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+table.admin-table td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 15px;
+    color: var(--text-primary);
+}
+
+table.admin-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success-color);
+}
+
+.status-expired {
+    background: rgba(244, 63, 94, 0.15);
+    color: var(--danger-color);
+}
+
+.status-redeemed {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+}
+
+.status-blocked {
+    background: rgba(244, 63, 94, 0.2);
+    color: var(--danger-color);
+    border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+/* Admin Formulare in Modals */
+.admin-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(8, 12, 20, 0.85);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.admin-modal-box {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    padding: 30px;
+    border-radius: 24px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: card-entrance 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.admin-modal-box h3 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.image-preview-box {
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    border: 1px dashed var(--border-color);
+    background: rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.image-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Admin specific helper classes */
+.admin-content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-content-header-border {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.admin-title {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.admin-title-margin {
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+}
+
+.admin-form {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.admin-orders-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.admin-close-btn {
+    padding: 5px 10px;
+    background: transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--text-muted);
+}
+
+.admin-upload-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+    font-size: 0.85rem !important;
+    padding: 8px 16px !important;
+}
+
+.admin-edit-order-modal {
+    max-width: 650px !important;
+    border-color: var(--primary-color) !important;
+}
+
+.admin-section-title {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.admin-items-editor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.admin-add-item-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 10px;
+    align-items: end;
+}
+
+.admin-select-small {
+    width: 100% !important;
+    padding: 8px 40px 8px 12px !important;
+    font-size: 0.85rem !important;
+}
+
+.admin-input-small {
+    padding: 8px 12px !important;
+    font-size: 0.85rem !important;
+}
+
+.admin-btn-small {
+    padding: 8px 16px !important;
+    font-size: 0.85rem !important;
+    height: 35px !important;
+}
+
+.admin-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.admin-btn-medium {
+    padding: 8px 20px !important;
+}

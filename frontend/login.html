@@ -16,13 +16,13 @@
         <h1>Mit Account anmelden</h1>
 
         <form id="loginForm" aria-label="Anmeldeformular">
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label for="login" style="font-weight: 500;">Benutzername oder E-Mail</label>
+            <div class="form-group">
+                <label for="login" class="form-label">Benutzername oder E-Mail</label>
                 <input type="text" id="login" placeholder="Username oder E-Mail" required autocomplete="username">
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label for="password" style="font-weight: 500;">Passwort</label>
+            <div class="form-group">
+                <label for="password" class="form-label">Passwort</label>
                 <input type="password" id="password" placeholder="Passwort" required autocomplete="current-password">
             </div>
 
@@ -39,7 +39,7 @@
             </button>
         </form>
 
-        <div id="status" style="text-align: center; margin-top: 15px; font-weight: 500;"></div>
+        <div id="status" class="text-center-status"></div>
     </main>
 
     <!-- Globaler Navbar-Controller -->

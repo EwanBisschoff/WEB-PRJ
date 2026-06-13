@@ -1,4 +1,6 @@
-// Globaler Header & Navbar Controller (EasyElectronics)
+/**
+ * @fileoverview Globaler Header & Navbar Controller (EasyElectronics)
+ */
 
 document.addEventListener("DOMContentLoaded", () => {
     // 1. Navbar-Container automatisch erstellen, falls nicht vorhanden
@@ -52,15 +54,7 @@ function highlightActiveLink() {
         const accountLink = document.getElementById('nav-account');
         if (accountLink) accountLink.classList.add('active');
     } else if (page === 'admin.php') {
-        // Welcher Admin-Link aktiv ist, hängt von den Query-Parametern ab
-        const urlParams = new URLSearchParams(window.location.search);
-        const tab = urlParams.get('tab') || 'products';
-        let targetId = '';
-        if (tab === 'products') targetId = 'nav-admin-products';
-        else if (tab === 'customers') targetId = 'nav-admin-users';
-        else if (tab === 'vouchers') targetId = 'nav-admin-vouchers';
-        
-        const activeLink = document.getElementById(targetId);
+        const activeLink = document.getElementById('nav-admin');
         if (activeLink) activeLink.classList.add('active');
     }
 }
@@ -69,8 +63,8 @@ function highlightActiveLink() {
 window.refreshCartBadge = function() {
     fetch('../backend/api/cart.php')
         .then(res => res.json())
-        .then(cart => {
-            window.updateCartBadge(cart.total_items);
+        .then(({ total_items }) => {
+            window.updateCartBadge(total_items);
         })
         .catch(err => console.error("Fehler beim Laden des Warenkorb-Zählers:", err));
 };
@@ -123,21 +117,19 @@ function initDragAndDrop() {
 function addProductToCartViaDrag(productId) {
     fetch('../backend/api/cart.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            action: 'add',
+            action:     'add',
             product_id: parseInt(productId)
         })
     })
     .then(res => res.json())
-    .then(cart => {
-        if (cart.error) {
-            console.error(cart.error);
+    .then(({ error, total_items }) => {
+        if (error) {
+            console.error(error);
         } else {
-            window.updateCartBadge(cart.total_items);
-            
+            window.updateCartBadge(total_items);
+
             // Falls wir uns auf der Warenkorb-Seite befinden, laden wir diese ebenfalls neu
             if (window.location.pathname.includes('cart.html') && typeof window.loadCartItems === 'function') {
                 window.loadCartItems();
@@ -151,36 +143,37 @@ function addProductToCartViaDrag(productId) {
 function checkSessionState(container) {
     fetch('../backend/api/session.php')
         .then(res => res.json())
-        .then(session => {
-            const navLinks = container.querySelector('.nav-links');
+        .then(({ loggedIn, role, username }) => {
+            const navLinks    = container.querySelector('.nav-links');
             const cartDropzone = container.querySelector('#cart-dropzone');
             if (!navLinks) return;
 
             // Navigationslinks zurücksetzen und basierend auf dem Status neu aufbauen
+            // noinspection HtmlUnknownTarget
             navLinks.innerHTML = '<li><a href="index.html" id="nav-home">Home</a></li>';
 
-            if (session.loggedIn) {
-                if (session.role === 'admin') {
-                    // Admin sieht: Home, Produkte bearbeiten, Kunden bearbeiten, Gutscheine verwalten (kein Warenkorb!)
+            if (loggedIn) {
+                if (role === 'admin') {
+                    // Admin sieht: Home, Admin, Mein Konto, greeting, Logout (kein Warenkorb!)
                     navLinks.insertAdjacentHTML('beforeend', `
-                        <li><a href="../backend/admin.php?tab=products" id="nav-admin-products">Produkte bearbeiten</a></li>
-                        <li><a href="../backend/admin.php?tab=customers" id="nav-admin-users">Kunden bearbeiten</a></li>
-                        <li><a href="../backend/admin.php?tab=vouchers" id="nav-admin-vouchers">Gutscheine verwalten</a></li>
-                        <li class="nav-user-greeting" style="color: var(--text-primary); font-weight: 500; padding: 8px 16px;">Hallo, ${session.username}!</li>
+                        <li><a href="../backend/admin.php" id="nav-admin">Admin</a></li>
+                        <li><a href="account.html" id="nav-account">Mein Konto</a></li>
+                        <li class="nav-user-greeting" style="color: var(--text-primary); font-weight: 500; padding: 8px 16px;">Hallo, ${username}!</li>
                         <li><a href="#" id="nav-logout" style="color: var(--danger-color); cursor: pointer;">Abmelden</a></li>
                     `);
-                    
+
                     // Warenkorb ausblenden
                     if (cartDropzone) cartDropzone.style.display = 'none';
                 } else {
                     // Eingeloggter Kunde sieht: Home, Produkte, Mein Konto, Warenkorb (und Logout)
+                    // noinspection HtmlUnknownTarget
                     navLinks.insertAdjacentHTML('beforeend', `
                         <li><a href="index.html" id="nav-products">Produkte</a></li>
                         <li><a href="account.html" id="nav-account">Mein Konto</a></li>
-                        <li class="nav-user-greeting" style="color: var(--text-primary); font-weight: 500; padding: 8px 16px;">Hallo, ${session.username}!</li>
+                        <li class="nav-user-greeting" style="color: var(--text-primary); font-weight: 500; padding: 8px 16px;">Hallo, ${username}!</li>
                         <li><a href="#" id="nav-logout" style="color: var(--danger-color); cursor: pointer;">Abmelden</a></li>
                     `);
-                    
+
                     if (cartDropzone) cartDropzone.style.display = 'flex';
                 }
 
@@ -198,12 +191,13 @@ function checkSessionState(container) {
                 }
             } else {
                 // Gast sieht: Home, Produkte, Login, Registrierung (und Warenkorb)
+                // noinspection HtmlUnknownTarget
                 navLinks.insertAdjacentHTML('beforeend', `
                     <li><a href="index.html" id="nav-products">Produkte</a></li>
                     <li><a href="login.html" id="nav-login">Login</a></li>
                     <li><a href="register.html" id="nav-register">Registrierung</a></li>
                 `);
-                
+
                 if (cartDropzone) cartDropzone.style.display = 'flex';
             }
 

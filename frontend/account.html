@@ -6,216 +6,7 @@
     <meta name="description" content="Verwalten Sie Ihr EasyElectronics Kundenkonto. Bearbeiten Sie Profildaten, verwalten Sie Zahlungsarten und sehen Sie Ihre Bestellungen ein.">
     <title>Mein Konto | EasyElectronics</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        /* Account-Spezifische Styles passend zum Glassmorphismus */
-        .account-layout {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 30px;
-            margin-top: 30px;
-        }
-        @media (min-width: 768px) {
-            .account-layout {
-                grid-template-columns: 250px 1fr;
-            }
-        }
-        /* Tab Navigation Links */
-        .account-menu {
-            display: flex;
-            flex-direction: row;
-            gap: 10px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: 20px;
-            height: fit-content;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        @media (min-width: 768px) {
-            .account-menu {
-                flex-direction: column;
-                overflow-x: visible;
-                white-space: normal;
-            }
-        }
-        .tab-btn {
-            background: transparent;
-            color: var(--text-muted);
-            border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            text-align: left;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: var(--transition-smooth);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-        }
-        .tab-btn:hover {
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.03);
-        }
-        .tab-btn.active {
-            color: white;
-            background: var(--primary-color);
-            box-shadow: 0 4px 15px var(--primary-glow);
-        }
-        .tab-btn svg {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-        }
-        /* Tab Inhalt-Container */
-        .account-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 30px;
-            min-height: 400px;
-            backdrop-filter: blur(5px);
-        }
-        .tab-panel {
-            display: none;
-            animation: card-entrance 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
-        }
-        .tab-panel.active {
-            display: block;
-        }
-        .tab-panel h2 {
-            font-size: 1.5rem;
-            margin-bottom: 25px;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        /* Zahlungsarten Liste */
-        .payment-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        .payment-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            background: rgba(0, 0, 0, 0.15);
-            transition: var(--transition-smooth);
-        }
-        .payment-item:hover {
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-        /* Bestellungen Liste */
-        .order-history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-        .order-card {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 20px;
-        }
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .order-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .order-total-block {
-            text-align: right;
-        }
-        .order-total-val {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-        .order-payment-voucher-info {
-            display: flex;
-            gap: 12px;
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .info-tag {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border-color);
-            padding: 4px 10px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .info-tag.voucher {
-            background: rgba(16, 185, 129, 0.08);
-            border-color: rgba(16, 185, 129, 0.2);
-            color: var(--success-color);
-        }
-        .order-items-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .order-item-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-        }
-        /* Passwort-Abfrage Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(8, 12, 20, 0.85);
-            backdrop-filter: blur(5px);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .modal-box {
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            padding: 35px;
-            border-radius: 24px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            animation: card-entrance 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/account.css">
 </head>
 <body>
 
@@ -260,85 +51,85 @@
                 <!-- Panel 1: Profil bearbeiten -->
                 <div id="panel-profile" class="tab-panel active">
                     <h2>Profil bearbeiten</h2>
-                    <form id="profileForm" style="max-width: 100%; margin: 0; padding: 0; background: transparent; border: none; box-shadow: none;">
-                        <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px;">
-                            <label for="profile-salutation" style="font-weight: 500;">Anrede</label>
-                            <select id="profile-salutation" required style="padding: 10px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.2); color: var(--text-primary);">
+                    <form id="profileForm" class="reset-form">
+                        <div class="form-group mb-20">
+                            <label for="profile-salutation" class="form-label">Anrede</label>
+                            <select id="profile-salutation" required class="custom-select form-select-custom w-100">
                                 <option value="Herr">Herr</option>
                                 <option value="Frau">Frau</option>
                                 <option value="Divers">Divers</option>
                             </select>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <label for="profile-firstname" style="font-weight: 500;">Vorname</label>
+                        <div class="form-row-2 mb-20">
+                            <div class="form-group">
+                                <label for="profile-firstname" class="form-label">Vorname</label>
                                 <input type="text" id="profile-firstname" placeholder="Vorname" required>
                             </div>
-                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <label for="profile-lastname" style="font-weight: 500;">Nachname</label>
+                            <div class="form-group">
+                                <label for="profile-lastname" class="form-label">Nachname</label>
                                 <input type="text" id="profile-lastname" placeholder="Nachname" required>
                             </div>
                         </div>
 
-                        <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px;">
-                            <label for="profile-address" style="font-weight: 500;">Adresse</label>
+                        <div class="form-group mb-20">
+                            <label for="profile-address" class="form-label">Adresse</label>
                             <input type="text" id="profile-address" placeholder="Musterstraße 123" required>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px;">
-                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <label for="profile-zip" style="font-weight: 500;">PLZ</label>
+                        <div class="form-row-1-2 mb-20">
+                            <div class="form-group">
+                                <label for="profile-zip" class="form-label">PLZ</label>
                                 <input type="text" id="profile-zip" placeholder="12345" required>
                             </div>
-                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <label for="profile-city" style="font-weight: 500;">Ort</label>
+                            <div class="form-group">
+                                <label for="profile-city" class="form-label">Ort</label>
                                 <input type="text" id="profile-city" placeholder="Musterstadt" required>
                             </div>
                         </div>
                         
-                        <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px;">
-                            <label for="profile-email" style="font-weight: 500;">E-Mail-Adresse</label>
+                        <div class="form-group mb-20">
+                            <label for="profile-email" class="form-label">E-Mail-Adresse</label>
                             <input type="email" id="profile-email" placeholder="E-Mail-Adresse" required>
                         </div>
                         
-                        <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px;">
-                            <label for="profile-username" style="font-weight: 500;">Username (Benutzername)</label>
+                        <div class="form-group mb-20">
+                            <label for="profile-username" class="form-label">Username (Benutzername)</label>
                             <input type="text" id="profile-username" placeholder="Benutzername" required>
                         </div>
 
 
-                        <button type="submit" class="btn btn-primary" style="width: auto;">
+                        <button type="submit" class="btn btn-primary w-auto">
                             Profildaten speichern
                         </button>
                     </form>
-                    <div id="profile-status" style="margin-top: 15px; font-weight: 500;"></div>
+                    <div id="profile-status" class="text-center-status"></div>
                 </div>
 
                 <!-- Panel 2: Passwort ändern -->
                 <div id="panel-password" class="tab-panel">
                     <h2>Passwort ändern</h2>
-                    <form id="passwordForm" style="max-width: 100%; margin: 0; padding: 0; background: transparent; border: none; box-shadow: none;">
-                        <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px;">
-                            <label for="password-current" style="font-weight: 500;">Aktuelles Passwort</label>
+                    <form id="passwordForm" class="reset-form">
+                        <div class="form-group mb-20">
+                            <label for="password-current" class="form-label">Aktuelles Passwort</label>
                             <input type="password" id="password-current" placeholder="Aktuelles Passwort" required>
                         </div>
                         
-                        <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px;">
-                            <label for="password-new" style="font-weight: 500;">Neues Passwort</label>
+                        <div class="form-group mb-20">
+                            <label for="password-new" class="form-label">Neues Passwort</label>
                             <input type="password" id="password-new" placeholder="Neues Passwort (min. 6 Zeichen)" required>
                         </div>
 
-                        <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 30px;">
-                            <label for="password-confirm" style="font-weight: 500;">Neues Passwort wiederholen</label>
+                        <div class="form-group mb-30">
+                            <label for="password-confirm" class="form-label">Neues Passwort wiederholen</label>
                             <input type="password" id="password-confirm" placeholder="Neues Passwort wiederholen" required>
                         </div>
 
-                        <button type="submit" class="btn btn-primary" style="width: auto;">
+                        <button type="submit" class="btn btn-primary w-auto">
                             Passwort aktualisieren
                         </button>
                     </form>
-                    <div id="password-status" style="margin-top: 15px; font-weight: 500;"></div>
+                    <div id="password-status" class="text-center-status"></div>
                 </div>
 
                 <!-- Panel 3: Zahlungsarten -->
@@ -349,16 +140,16 @@
                         <!-- Zahlungsarten werden geladen -->
                     </div>
 
-                    <button id="btn-toggle-new-pay" class="btn" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); width: 100%;">
+                    <button id="btn-toggle-new-pay" class="btn btn-outline-muted w-100">
                         + Neue Zahlungsart hinzufügen
                     </button>
 
                     <!-- Formular für neue Zahlungsart -->
-                    <div id="new-payment-form" class="new-payment-form" style="border-top: 1px dashed var(--border-color); margin-top: 20px; padding-top: 20px; display: none;">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <label for="new-provider" style="font-weight: 500; font-size: 0.9rem;">Anbieter</label>
-                                <select id="new-provider" class="custom-select" style="width: 100%; padding: 10px 40px 10px 15px;">
+                    <div id="new-payment-form" class="new-payment-form">
+                        <div class="flex-column-gap-12">
+                            <div class="form-group">
+                                <label for="new-provider" class="form-label fs-09">Anbieter</label>
+                                <select id="new-provider" class="custom-select form-select-custom w-100">
                                     <option value="Visa">Visa</option>
                                     <option value="MasterCard">MasterCard</option>
                                     <option value="PayPal">PayPal</option>
@@ -366,12 +157,12 @@
                                 </select>
                             </div>
                             
-                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <label for="new-details" id="new-details-label" style="font-weight: 500; font-size: 0.9rem;">Kartennummer (letzte 4 Ziffern) oder E-Mail</label>
+                            <div class="form-group">
+                                <label for="new-details" id="new-details-label" class="form-label fs-09">Kartennummer (letzte 4 Ziffern) oder E-Mail</label>
                                 <input type="text" id="new-details" placeholder="z. B. •••• 4321" required>
                             </div>
 
-                            <button id="btn-save-pay" class="btn btn-primary" style="margin-top: 5px; width: auto;">
+                            <button id="btn-save-pay" class="btn btn-primary mt-5 w-auto">
                                 Zahlungsart speichern
                             </button>
                         </div>
@@ -393,13 +184,13 @@
     <!-- Passwortabfrage Modal für Profiländerungen -->
     <div id="password-modal" class="modal-overlay">
         <div class="modal-box">
-            <h3 style="font-size: 1.25rem; color: var(--text-primary); text-align: center;">Sicherheitsbestätigung</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; line-height: 1.5;">
+            <h3 class="modal-title">Sicherheitsbestätigung</h3>
+            <p class="modal-text">
                 Bitte geben Sie Ihr aktuelles Passwort ein, um die Änderungen an Ihren Profildaten zu speichern.
             </p>
-            <input type="password" id="modal-password-input" placeholder="Aktuelles Passwort" style="width: 100%;" required>
-            <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 10px;">
-                <button id="modal-btn-cancel" class="btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-primary);">Abbrechen</button>
+            <input type="password" id="modal-password-input" placeholder="Aktuelles Passwort" class="w-100" aria-label="Aktuelles Passwort" required>
+            <div class="modal-buttons-row">
+                <button id="modal-btn-cancel" class="btn btn-secondary">Abbrechen</button>
                 <button id="modal-btn-confirm" class="btn btn-primary">Bestätigen</button>
             </div>
         </div>
@@ -407,6 +198,8 @@
 
     <!-- Globaler Navbar-Controller -->
     <script src="js/navbar.js"></script>
+    <!-- Gemeinsame Hilfsfunktionen (setupTabs, setupPaymentFormToggle) -->
+    <script src="js/utils.js"></script>
     <!-- Account Seite Controller -->
     <script src="js/account.js"></script>
 </body>

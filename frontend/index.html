@@ -6,6 +6,7 @@
     <meta name="description" content="Entdecken Sie EasyElectronics - Ihren Premium-Webshop für hochwertige Elektronik- und Audiogeräte. Genießen Sie eine interaktive Benutzerführung und schnellen Service.">
     <title>EasyElectronics | Premium Webshop für Elektronik & Audio</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
 
@@ -16,13 +17,13 @@
     <h1>EasyElectronics Webshop</h1>
 
     <!-- Kategoriefilter -->
-    <div class="filter-container" style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 250px;">
-            <input type="text" id="searchInput" class="custom-select" placeholder="Produkte live suchen..." aria-label="Produkte durchsuchen" style="width: 100%; box-sizing: border-box;">
+    <div class="filter-container">
+        <div class="flex-grow-1-min">
+            <input type="text" id="searchInput" class="custom-select w-100-box" placeholder="Produkte live suchen..." aria-label="Produkte durchsuchen">
         </div>
 
-        <div style="min-width: 150px;">
-            <select id="categorySelect" class="custom-select" aria-label="Produktkategorie filtern" style="width: 100%;">
+        <div class="min-w-150">
+            <select id="categorySelect" class="custom-select w-100" aria-label="Produktkategorie filtern">
                 <option value="Elektronik">Elektronik</option>
                 <option value="Audio">Audio</option>
             </select>

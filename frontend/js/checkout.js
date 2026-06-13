@@ -1,4 +1,6 @@
-// Kassenseite Controller (EasyElectronics)
+/**
+ * @fileoverview Kassenseite Controller (EasyElectronics)
+ */
 
 document.addEventListener("DOMContentLoaded", () => {
     // 1. Authentifizierungs-Check beim Laden der Seite
@@ -20,45 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 4. Formular für neue Zahlungsart ein-/ausblenden
-    const toggleNewPayBtn = document.getElementById('btn-toggle-new-pay');
-    const newPayForm = document.getElementById('new-payment-form');
-    if (toggleNewPayBtn && newPayForm) {
-        toggleNewPayBtn.addEventListener('click', () => {
-            const isVisible = newPayForm.style.display === 'block';
-            newPayForm.style.display = isVisible ? 'none' : 'block';
-            toggleNewPayBtn.textContent = isVisible ? '+ Neue Zahlungsart hinzufügen' : 'Abbrechen';
-        });
-    }
-
-    // 5. Neue Zahlungsart speichern
-    const savePayBtn = document.getElementById('btn-save-pay');
-    if (savePayBtn) {
-        savePayBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            saveNewPaymentMethod();
-        });
-    }
-
-    // 6. Label-Text je nach ausgewähltem Anbieter anpassen
-    const providerSelect = document.getElementById('new-provider');
-    const detailsLabel = document.getElementById('new-details-label');
-    const detailsInput = document.getElementById('new-details');
-    if (providerSelect && detailsLabel && detailsInput) {
-        providerSelect.addEventListener('change', () => {
-            const val = providerSelect.value;
-            if (val === 'PayPal') {
-                detailsLabel.textContent = 'PayPal E-Mail-Adresse';
-                detailsInput.placeholder = 'beispiel@email.de';
-            } else if (val === 'Bankeinzug') {
-                detailsLabel.textContent = 'IBAN';
-                detailsInput.placeholder = 'DE89 •••• •••• •••• •••• ••';
-            } else {
-                detailsLabel.textContent = 'Kartennummer (letzte 4 Ziffern)';
-                detailsInput.placeholder = 'z. B. •••• 4321';
-            }
-        });
-    }
+    // 4-6. Zahlungsart-Formular Toggle + Speichern + Label-Anpassung (utils.js)
+    setupPaymentFormToggle(saveNewPaymentMethod);
 });
 
 // Lokale Variablen zur Verfolgung des Kassen-Status
@@ -71,8 +36,8 @@ let appliedVoucher = null; // Speichert Berechnungsergebnisse des Gutscheins
 function checkAuthentication() {
     fetch('../backend/api/session.php')
         .then(res => res.json())
-        .then(session => {
-            if (!session.loggedIn) {
+        .then(({ loggedIn }) => {
+            if (!loggedIn) {
                 // Wenn nicht angemeldet, zurück zum Login mit Weiterleitungsparameter
                 alert("Bitte melden Sie sich an, um zur Kasse zu gelangen.");
                 window.location.href = 'login.html?redirect=checkout.html';
@@ -100,7 +65,7 @@ function loadCheckoutDetails() {
             }
             cartData = cart;
             renderOrderSummary();
-            
+
             // Erst wenn der Warenkorb geladen ist, rufen wir die Zahlungsarten ab
             loadPaymentMethods();
         })
@@ -138,7 +103,7 @@ function renderPaymentMethods() {
         const option = document.createElement('div');
         option.className = 'payment-option';
         option.id = `pay-option-${method.id}`;
-        
+
         // Erste Methode standardmäßig vorauswählen
         const isChecked = index === 0;
         if (isChecked && !selectedPaymentMethodId) {
@@ -148,15 +113,12 @@ function renderPaymentMethods() {
             option.classList.add('selected');
         }
 
-        // SVG Icons passend zum Anbieter
-        let providerIcon = '';
-        if (method.provider === 'Visa') {
-            providerIcon = '💳';
-        } else if (method.provider === 'PayPal') {
-            providerIcon = '🅿️';
-        } else {
-            providerIcon = '💵';
-        }
+        // Icon passend zum Anbieter (redundant initializer vermieden)
+        const providerIcon = method.provider === 'Visa' || method.provider === 'MasterCard'
+            ? '💳'
+            : method.provider === 'PayPal'
+                ? '🅿️'
+                : '💵';
 
         option.innerHTML = `
             <input type="radio" name="payment_method" value="${method.id}" ${isChecked || selectedPaymentMethodId === method.id ? 'checked' : ''}>
@@ -178,11 +140,11 @@ function renderPaymentMethods() {
 // Eine Zahlungsart selektieren
 function selectPaymentMethod(id) {
     selectedPaymentMethodId = id;
-    
+
     // UI aktualisieren (Klassen anpassen)
     const options = document.querySelectorAll('.payment-option');
     options.forEach(opt => opt.classList.remove('selected'));
-    
+
     const selectedOpt = document.getElementById(`pay-option-${id}`);
     if (selectedOpt) {
         selectedOpt.classList.add('selected');
@@ -191,10 +153,10 @@ function selectPaymentMethod(id) {
     }
 }
 
-// Neue Zahlungsart speichern (AJAX POST)
+// Neue Zahlungsart speichern (AJAX POST) — wird von setupPaymentFormToggle() (utils.js) aufgerufen
 function saveNewPaymentMethod() {
     const provider = document.getElementById('new-provider').value;
-    const details = document.getElementById('new-details').value.trim();
+    const details  = document.getElementById('new-details').value.trim();
 
     if (!details) {
         alert("Bitte füllen Sie die Details zur Zahlungsart aus.");
@@ -203,9 +165,7 @@ function saveNewPaymentMethod() {
 
     fetch('../backend/api/payment_methods.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider, details })
     })
     .then(res => res.json())
@@ -218,10 +178,11 @@ function saveNewPaymentMethod() {
             document.getElementById('new-details').value = '';
             document.getElementById('new-payment-form').style.display = 'none';
             document.getElementById('btn-toggle-new-pay').textContent = '+ Neue Zahlungsart hinzufügen';
-            
+
             // Zahlungsart vorauswählen
-            selectedPaymentMethodId = result.payment_method.id;
-            
+            const { payment_method } = result;
+            selectedPaymentMethodId = payment_method.id;
+
             // Neu laden
             loadPaymentMethods();
         }
@@ -231,26 +192,23 @@ function saveNewPaymentMethod() {
 
 // Gutschein einlösen (AJAX POST)
 function applyVoucher() {
-    const codeInput = document.getElementById('voucher-code');
+    const codeInput        = document.getElementById('voucher-code');
     const messageContainer = document.getElementById('voucher-message');
-    
+
     if (!codeInput || !messageContainer) return;
-    
+
     const code = codeInput.value.trim();
     if (!code) {
         alert("Bitte geben Sie einen Gutscheincode ein.");
         return;
     }
 
+    const { grand_total } = cartData;
+
     fetch('../backend/api/vouchers.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            code: code,
-            total_price: cartData.grand_total
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, total_price: grand_total })
     })
     .then(res => {
         if (!res.ok) {
@@ -260,15 +218,17 @@ function applyVoucher() {
     })
     .then(result => {
         appliedVoucher = result;
-        
+        const { voucher, calculation } = result;
+        const { discount } = calculation;
+
         // Nachricht für Erfolg anzeigen
         messageContainer.innerHTML = `
             <div class="badge-voucher">
-                Gutschein <strong>${result.voucher.code}</strong> angewendet: -${parseFloat(result.calculation.discount).toFixed(2).replace('.', ',')} €
+                Gutschein <strong>${voucher.code}</strong> angewendet: -${parseFloat(discount).toFixed(2).replace('.', ',')} €
             </div>
         `;
         messageContainer.style.color = "var(--success-color)";
-        
+
         // Bestellübersicht aktualisieren
         renderOrderSummary();
     })
@@ -276,7 +236,7 @@ function applyVoucher() {
         appliedVoucher = null;
         messageContainer.textContent = "Fehler: " + err.message;
         messageContainer.style.color = "var(--danger-color)";
-        
+
         // Bestellübersicht aktualisieren (falls Gutschein ungültig gemacht wurde)
         renderOrderSummary();
     });
@@ -301,18 +261,20 @@ function renderOrderSummary() {
         });
     }
 
-    // Werte berechnen
-    let subtotal = cartData.subtotal;
+    // Werte berechnen — cartData-Felder destrukturieren
+    const { subtotal, grand_total } = cartData;
     let discount = 0.0;
-    let total = cartData.grand_total;
+    let total    = grand_total;
 
     const discountRow = document.getElementById('summary-discount-row');
     const discountVal = document.getElementById('summary-discount');
 
     if (appliedVoucher) {
-        discount = appliedVoucher.calculation.discount;
-        total = appliedVoucher.calculation.final_total;
-        
+        const { calculation } = appliedVoucher;
+        const { discount: voucherDiscount, final_total } = calculation;
+        discount = voucherDiscount;
+        total    = final_total;
+
         if (discountRow && discountVal) {
             discountRow.style.display = 'flex';
             discountVal.textContent = `-${parseFloat(discount).toFixed(2).replace('.', ',')} €`;
@@ -323,7 +285,7 @@ function renderOrderSummary() {
 
     // UI-Elemente füllen
     document.getElementById('summary-subtotal').textContent = parseFloat(subtotal).toFixed(2).replace('.', ',') + ' €';
-    document.getElementById('summary-total').textContent = parseFloat(total).toFixed(2).replace('.', ',') + ' €';
+    document.getElementById('summary-total').textContent    = parseFloat(total).toFixed(2).replace('.', ',') + ' €';
 }
 
 // Bestellung absenden (AJAX POST)
@@ -333,16 +295,17 @@ function submitOrder() {
         return;
     }
 
+    const { voucher } = appliedVoucher || {};
+    const voucherCode = voucher ? voucher.code : '';
+
     const payload = {
         payment_method_id: selectedPaymentMethodId,
-        voucher_code: appliedVoucher ? appliedVoucher.voucher.code : ''
+        voucher_code:      voucherCode
     };
 
     fetch('../backend/api/checkout.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
     .then(res => {
@@ -354,21 +317,28 @@ function submitOrder() {
     .then(result => {
         // Erfolgs-Overlay anzeigen
         document.getElementById('success-order-id').textContent = result.order_id;
-        
+
         // Überprüfen, ob es einen Restwert auf dem Gutschein gibt
         const residualInfo = document.getElementById('voucher-residual-info');
-        if (appliedVoucher && parseFloat(appliedVoucher.calculation.remaining_voucher_value) > 0) {
-            const restwert = parseFloat(appliedVoucher.calculation.remaining_voucher_value).toFixed(2).replace('.', ',');
-            residualInfo.style.display = 'block';
-            residualInfo.innerHTML = `
-                <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary-color); border-radius: 12px; padding: 15px; color: var(--text-primary);">
-                    ℹ️ Ihr Gutschein <strong>${appliedVoucher.voucher.code}</strong> hat noch einen Restwert von <strong>${restwert} €</strong> für Ihren nächsten Einkauf!
-                </div>
-            `;
+        if (appliedVoucher) {
+            const { calculation, voucher } = appliedVoucher;
+            const { remaining_voucher_value } = calculation;
+
+            if (parseFloat(remaining_voucher_value) > 0) {
+                const restwert = parseFloat(remaining_voucher_value).toFixed(2).replace('.', ',');
+                residualInfo.style.display = 'block';
+                residualInfo.innerHTML = `
+                    <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary-color); border-radius: 12px; padding: 15px; color: var(--text-primary);">
+                        ℹ️ Ihr Gutschein <strong>${voucher.code}</strong> hat noch einen Restwert von <strong>${restwert} €</strong> für Ihren nächsten Einkauf!
+                    </div>
+                `;
+            } else {
+                residualInfo.style.display = 'none';
+            }
         } else {
             residualInfo.style.display = 'none';
         }
-        
+
         // Badge zurücksetzen
         if (typeof window.updateCartBadge === 'function') {
             window.updateCartBadge(0);

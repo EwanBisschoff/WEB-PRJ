@@ -1,4 +1,6 @@
-// Rechnungsseite Controller (EasyElectronics)
+/**
+ * @fileoverview Rechnungsseite Controller (EasyElectronics)
+ */
 
 document.addEventListener("DOMContentLoaded", () => {
     // 1. Authentifizierungs-Check
@@ -9,15 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
 function checkAuthentication() {
     fetch('../backend/api/session.php')
         .then(res => res.json())
-        .then(session => {
-            if (!session.loggedIn) {
+        .then(({ loggedIn }) => {
+            if (!loggedIn) {
                 alert("Nicht autorisiert. Bitte melden Sie sich an.");
                 window.location.href = 'login.html';
             } else {
                 // Bestell-ID aus Query-Parameter lesen
-                const params = new URLSearchParams(window.location.search);
+                const params  = new URLSearchParams(window.location.search);
                 const orderId = parseInt(params.get('order_id') || '0');
-                
+
                 if (orderId <= 0) {
                     showError("Ungültige Bestellnummer angegeben.");
                 } else {
@@ -66,16 +68,23 @@ function renderInvoice(invoice) {
     const container = document.getElementById('invoice-container');
     if (!container) return;
 
+    // Alle genutzten Felder destrukturieren — löst alle "Unresolved variable"-Warnungen
+    const { date, items, voucher, company, invoice_number, order_id, customer, payment, subtotal, total_price } = invoice;
+    const { discount, code: voucherCode } = voucher;
+    const { name: companyName, address: companyAddress, city: companyCity, email: companyEmail, website, vat_id } = company;
+    const { name: customerName, email: customerEmail } = customer;
+    const { provider: paymentProvider, details: paymentDetails } = payment;
+
     // Formatiertes Datum
-    const formattedDate = new Date(invoice.date).toLocaleDateString('de-DE', {
-        day: '2-digit',
+    const formattedDate = new Date(date).toLocaleDateString('de-DE', {
+        day:   '2-digit',
         month: '2-digit',
-        year: 'numeric'
+        year:  'numeric'
     });
 
     // Artikellisten-Zeilen aufbauen
     let itemsRowsHtml = '';
-    invoice.items.forEach(item => {
+    items.forEach(item => {
         itemsRowsHtml += `
             <tr>
                 <td>
@@ -91,11 +100,11 @@ function renderInvoice(invoice) {
 
     // Rabatt-Zeile (nur anzeigen falls vorhanden)
     let discountRowHtml = '';
-    if (parseFloat(invoice.voucher.discount) > 0) {
+    if (parseFloat(discount) > 0) {
         discountRowHtml = `
             <tr>
-                <td style="color: #10b981;">Gutschein (${invoice.voucher.code}):</td>
-                <td class="num" style="color: #10b981;">-${parseFloat(invoice.voucher.discount).toFixed(2).replace('.', ',')} €</td>
+                <td style="color: #10b981;">Gutschein (${voucherCode}):</td>
+                <td class="num" style="color: #10b981;">-${parseFloat(discount).toFixed(2).replace('.', ',')} €</td>
             </tr>
         `;
     }
@@ -106,20 +115,20 @@ function renderInvoice(invoice) {
         <header class="invoice-header">
             <div class="address-block">
                 <div class="company-logo">EasyElectronics</div>
-                <strong>${invoice.company.name}</strong><br>
-                ${invoice.company.address}<br>
-                ${invoice.company.city}<br>
-                E-Mail: ${invoice.company.email}<br>
-                Web: ${invoice.company.website}
+                <strong>${companyName}</strong><br>
+                ${companyAddress}<br>
+                ${companyCity}<br>
+                E-Mail: ${companyEmail}<br>
+                Web: ${website}
             </div>
-            
+
             <div class="invoice-title-block">
                 <h2 class="invoice-title">RECHNUNG</h2>
                 <div class="invoice-details">
-                    <strong>Rechnungs-Nr:</strong> ${invoice.invoice_number}<br>
-                    <strong>Bestell-Nr:</strong> #${invoice.order_id}<br>
+                    <strong>Rechnungs-Nr:</strong> ${invoice_number}<br>
+                    <strong>Bestell-Nr:</strong> #${order_id}<br>
                     <strong>Datum:</strong> ${formattedDate}<br>
-                    <strong>Umsatzsteuer-ID:</strong> ${invoice.company.vat_id}
+                    <strong>Umsatzsteuer-ID:</strong> ${vat_id}
                 </div>
             </div>
         </header>
@@ -128,14 +137,14 @@ function renderInvoice(invoice) {
         <section class="billing-block">
             <div class="billing-col">
                 <h3>Rechnungsempfänger</h3>
-                <strong style="color: var(--text-primary);">${invoice.customer.name}</strong><br>
-                E-Mail: ${invoice.customer.email}
+                <strong style="color: var(--text-primary);">${customerName}</strong><br>
+                E-Mail: ${customerEmail}
             </div>
-            
+
             <div class="billing-col">
                 <h3>Zahlungsart</h3>
-                <strong>Anbieter:</strong> ${invoice.payment.provider}<br>
-                <strong>Konto/Details:</strong> ${invoice.payment.details}
+                <strong>Anbieter:</strong> ${paymentProvider}<br>
+                <strong>Konto/Details:</strong> ${paymentDetails}
             </div>
         </section>
 
@@ -160,7 +169,7 @@ function renderInvoice(invoice) {
                 <tbody>
                     <tr>
                         <td>Zwischensumme (Brutto):</td>
-                        <td class="num">${parseFloat(invoice.subtotal).toFixed(2).replace('.', ',')} €</td>
+                        <td class="num">${parseFloat(subtotal).toFixed(2).replace('.', ',')} €</td>
                     </tr>
                     ${discountRowHtml}
                     <tr>
@@ -169,7 +178,7 @@ function renderInvoice(invoice) {
                     </tr>
                     <tr class="total-row">
                         <td>Gesamtsumme:</td>
-                        <td class="num">${parseFloat(invoice.total_price).toFixed(2).replace('.', ',')} €</td>
+                        <td class="num">${parseFloat(total_price).toFixed(2).replace('.', ',')} €</td>
                     </tr>
                 </tbody>
             </table>
@@ -178,7 +187,7 @@ function renderInvoice(invoice) {
         <!-- Fußzeile -->
         <footer class="footer">
             <p>EasyElectronics GmbH • Sitz: Wien • Firmenbuchgericht: Handelsgericht Wien • FN 987654x</p>
-            <p>Vielen Dank für Ihren Einkauf! Bei Fragen kontaktieren Sie uns unter ${invoice.company.email}.</p>
+            <p>Vielen Dank für Ihren Einkauf! Bei Fragen kontaktieren Sie uns unter ${companyEmail}.</p>
         </footer>
     `;
 }

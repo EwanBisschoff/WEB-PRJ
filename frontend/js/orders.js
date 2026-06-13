@@ -1,4 +1,6 @@
-// Bestellungs-Verwaltung (EasyElectronics)
+/**
+ * @fileoverview Bestellungs-Verwaltung (EasyElectronics)
+ */
 
 document.addEventListener("DOMContentLoaded", () => {
     // Authentifizierungsprüfung beim Laden der Seite
@@ -9,8 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function checkAuthentication() {
     fetch('../backend/api/session.php')
         .then(res => res.json())
-        .then(session => {
-            if (!session.loggedIn) {
+        .then(({ loggedIn }) => {
+            if (!loggedIn) {
                 // Wenn nicht angemeldet, zurück zum Login
                 alert("Bitte melden Sie sich an, um Ihre Bestellungen zu sehen.");
                 window.location.href = 'login.html';
@@ -54,6 +56,7 @@ function renderOrders(orders) {
     if (!container) return;
 
     if (orders.length === 0) {
+        // noinspection HtmlUnknownTarget
         container.innerHTML = `
             <div style="text-align: center; padding: 60px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px;">
                 <svg style="width: 80px; height: 80px; color: var(--text-muted); opacity: 0.3; margin-bottom: 20px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,53 +76,51 @@ function renderOrders(orders) {
         orderCard.className = 'order-card';
         orderCard.style.animation = `card-entrance 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.05}s both`;
 
-        // Formatierte Werte
-        const formattedDate = new Date(order.order_date).toLocaleDateString('de-DE', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        const formattedTotal = parseFloat(order.total_price).toFixed(2).replace('.', ',') + ' €';
-        const formattedDiscount = parseFloat(order.discount).toFixed(2).replace('.', ',') + ' €';
+        // Alle benötigten Felder destrukturieren
+        const { id: orderId, order_date, total_price, discount, payment, voucher_code, items } = order;
+        const { provider: payProvider, details: payDetails } = payment;
 
-        // Zahlungs-Icon / Text
-        let payIcon = '';
-        if (order.payment.provider === 'Visa' || order.payment.provider === 'MasterCard') {
-            payIcon = '💳';
-        } else if (order.payment.provider === 'PayPal') {
-            payIcon = '🅿️';
-        } else {
-            payIcon = '💵';
-        }
+        // Formatierte Werte
+        const formattedDate     = new Date(order_date).toLocaleDateString('de-DE', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+        const formattedTotal    = parseFloat(total_price).toFixed(2).replace('.', ',') + ' €';
+        const formattedDiscount = parseFloat(discount).toFixed(2).replace('.', ',') + ' €';
+
+        // Zahlungs-Icon (redundanter Initializer vermieden → direktes const)
+        const payIcon = payProvider === 'Visa' || payProvider === 'MasterCard'
+            ? '💳'
+            : payProvider === 'PayPal'
+                ? '🅿️'
+                : '💵';
 
         // Tags aufbauen (Zahlung und Gutschein)
         let tagsHtml = `
             <div class="info-tag" title="Verwendete Zahlungsart">
-                ${payIcon} ${order.payment.provider} (${order.payment.details})
+                ${payIcon} ${payProvider} (${payDetails})
             </div>
         `;
 
-        if (order.voucher_code) {
+        if (voucher_code) {
             tagsHtml += `
                 <div class="info-tag voucher" title="Eingelöster Gutschein">
-                    🏷️ Gutschein: ${order.voucher_code} (-${formattedDiscount})
+                    🏷️ Gutschein: ${voucher_code} (-${formattedDiscount})
                 </div>
             `;
         }
 
         // HTML für die einzelnen Artikel generieren
+        // SVG: ry="2" entfernt (obsolet in SVG2, rx="2" allein genügt)
         let itemsHtml = '';
-        order.items.forEach(item => {
-            // SVG-Icon passend zur Kategorie
+        items.forEach(item => {
             const isAudio = item.category.toLowerCase() === 'audio';
             const itemIconSvg = isAudio
                 ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>`
-                : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`;
+                : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`;
 
             const itemLineTotal = parseFloat(item.line_total).toFixed(2).replace('.', ',') + ' €';
-            const itemPrice = parseFloat(item.price).toFixed(2).replace('.', ',') + ' €';
+            const itemPrice     = parseFloat(item.price).toFixed(2).replace('.', ',') + ' €';
 
             itemsHtml += `
                 <div class="order-item-row">
@@ -144,7 +145,7 @@ function renderOrders(orders) {
         orderCard.innerHTML = `
             <div class="order-header">
                 <div class="order-meta">
-                    <span class="order-id">Bestell-ID: #${order.id}</span>
+                    <span class="order-id">Bestell-ID: #${orderId}</span>
                     <span class="order-date">Bestellt am ${formattedDate}</span>
                 </div>
                 <div class="order-total-block">
@@ -152,11 +153,11 @@ function renderOrders(orders) {
                     <div class="order-total-val">${formattedTotal}</div>
                 </div>
             </div>
-            
+
             <div class="order-payment-voucher-info">
                 ${tagsHtml}
             </div>
-            
+
             <div class="order-items-grid">
                 ${itemsHtml}
             </div>
