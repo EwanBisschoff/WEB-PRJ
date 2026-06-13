@@ -270,7 +270,7 @@
 
                 <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
                     <label for="product-description" style="font-weight: 500;">Beschreibung</label>
-                    <textarea id="product-description" rows="3" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); padding: 12px; font-family: var(--font-main); font-size: 0.95rem; resize: vertical;" placeholder="Produktbeschreibung..."></textarea>
+                    <textarea id="product-description" rows="3" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); padding: 12px; font-family: var(--font-main), sans-serif; font-size: 0.95rem; resize: vertical;" placeholder="Produktbeschreibung..."></textarea>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
@@ -324,7 +324,7 @@
             <h3>Neuen Gutschein erstellen</h3>
             <form id="form-voucher" style="max-width: 100%; margin: 0; padding: 0; background: transparent; border: none; box-shadow: none;">
                 <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
-                    <label for="voucher-code" style="font-weight: 500;">Gutscheincode (5-stellig, optional)</label>
+                    <label for="voucher-code-input" style="font-weight: 500;">Gutscheincode (5-stellig, optional)</label>
                     <input type="text" id="voucher-code-input" placeholder="Wird generiert falls leer" maxlength="5" style="text-transform: uppercase;">
                     <span style="font-size: 0.75rem; color: var(--text-muted);">Lassen Sie das Feld leer, um einen zufälligen Code zu generieren.</span>
                 </div>
