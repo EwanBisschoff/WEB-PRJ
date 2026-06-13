@@ -86,6 +86,23 @@ function setupTabs() {
             if (targetPanel) targetPanel.classList.add('active');
         });
     });
+
+    // Automatischer Wechsel zum per Parameter übergebenen Tab (EPIC 9 / Alignment)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam) {
+        let targetId = '';
+        if (tabParam === 'products') targetId = 'admin-products';
+        else if (tabParam === 'vouchers') targetId = 'admin-vouchers';
+        else if (tabParam === 'customers') targetId = 'admin-users';
+
+        if (targetId) {
+            const btn = Array.from(tabButtons).find(b => b.getAttribute('data-target') === targetId);
+            if (btn) {
+                btn.click();
+            }
+        }
+    }
 }
 
 // ----------------------------------------------------

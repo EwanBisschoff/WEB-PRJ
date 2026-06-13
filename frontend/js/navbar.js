@@ -34,29 +34,34 @@ function highlightActiveLink() {
     const path = window.location.pathname;
     const page = path.substring(path.lastIndexOf('/') + 1);
 
-    // Alle Links zurücksetzen
-    const links = {
-        'index.html': document.getElementById('nav-home'),
-        'login.html': document.getElementById('nav-login'),
-        'register.html': document.getElementById('nav-register')
-    };
+    // Alle aktiven CSS Klassen entfernen
+    const allLinks = document.querySelectorAll('.nav-links a');
+    allLinks.forEach(link => link.classList.remove('active'));
 
-    // Standardmäßig Home aktivieren
-    let activeLink = links['index.html'];
-
-    if (page === 'login.html') {
-        activeLink = links['login.html'];
+    // Richtigen Link aktivieren
+    if (page === 'index.html' || page === '') {
+        const homeLink = document.getElementById('nav-home');
+        if (homeLink) homeLink.classList.add('active');
+    } else if (page === 'login.html') {
+        const loginLink = document.getElementById('nav-login');
+        if (loginLink) loginLink.classList.add('active');
     } else if (page === 'register.html') {
-        activeLink = links['register.html'];
-    } else if (page === 'cart.html') {
-        // Warenkorb aktiv -> Icon-Button leuchtend machen
-        const cartBtn = document.getElementById('cart-dropzone');
-        if (cartBtn) cartBtn.style.background = 'var(--primary-color)';
-        activeLink = null;
-    }
-
-    if (activeLink) {
-        activeLink.classList.add('active');
+        const registerLink = document.getElementById('nav-register');
+        if (registerLink) registerLink.classList.add('active');
+    } else if (page === 'account.html') {
+        const accountLink = document.getElementById('nav-account');
+        if (accountLink) accountLink.classList.add('active');
+    } else if (page === 'admin.php') {
+        // Welcher Admin-Link aktiv ist, hängt von den Query-Parametern ab
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab') || 'products';
+        let targetId = '';
+        if (tab === 'products') targetId = 'nav-admin-products';
+        else if (tab === 'customers') targetId = 'nav-admin-users';
+        else if (tab === 'vouchers') targetId = 'nav-admin-vouchers';
+        
+        const activeLink = document.getElementById(targetId);
+        if (activeLink) activeLink.classList.add('active');
     }
 }
 
@@ -142,34 +147,42 @@ function addProductToCartViaDrag(productId) {
     .catch(err => console.error("Fehler beim Hinzufügen des Produkts via Drag:", err));
 }
 
-// Prüft den Anmeldestatus und passt die Navigation dynamisch an (EPIC 7)
+// Prüft den Anmeldestatus und passt die Navigation dynamisch an (EPIC 7 / Alignment)
 function checkSessionState(container) {
     fetch('../backend/api/session.php')
         .then(res => res.json())
         .then(session => {
             const navLinks = container.querySelector('.nav-links');
+            const cartDropzone = container.querySelector('#cart-dropzone');
             if (!navLinks) return;
 
+            // Navigationslinks zurücksetzen und basierend auf dem Status neu aufbauen
+            navLinks.innerHTML = '<li><a href="index.html" id="nav-home">Home</a></li>';
+
             if (session.loggedIn) {
-                // Login und Registrierung aus der Liste entfernen
-                const loginLink = container.querySelector('#nav-login');
-                const registerLink = container.querySelector('#nav-register');
-                if (loginLink) loginLink.parentElement.remove();
-                if (registerLink) registerLink.parentElement.remove();
-
-                // Admin Link prüfen (EPIC 9)
-                let adminLinkHtml = '';
                 if (session.role === 'admin') {
-                    adminLinkHtml = `<li><a href="../backend/admin.php" id="nav-admin">Admin-Bereich</a></li>`;
+                    // Admin sieht: Home, Produkte bearbeiten, Kunden bearbeiten, Gutscheine verwalten (kein Warenkorb!)
+                    navLinks.insertAdjacentHTML('beforeend', `
+                        <li><a href="../backend/admin.php?tab=products" id="nav-admin-products">Produkte bearbeiten</a></li>
+                        <li><a href="../backend/admin.php?tab=customers" id="nav-admin-users">Kunden bearbeiten</a></li>
+                        <li><a href="../backend/admin.php?tab=vouchers" id="nav-admin-vouchers">Gutscheine verwalten</a></li>
+                        <li class="nav-user-greeting" style="color: var(--text-primary); font-weight: 500; padding: 8px 16px;">Hallo, ${session.username}!</li>
+                        <li><a href="#" id="nav-logout" style="color: var(--danger-color); cursor: pointer;">Abmelden</a></li>
+                    `);
+                    
+                    // Warenkorb ausblenden
+                    if (cartDropzone) cartDropzone.style.display = 'none';
+                } else {
+                    // Eingeloggter Kunde sieht: Home, Produkte, Mein Konto, Warenkorb (und Logout)
+                    navLinks.insertAdjacentHTML('beforeend', `
+                        <li><a href="index.html" id="nav-products">Produkte</a></li>
+                        <li><a href="account.html" id="nav-account">Mein Konto</a></li>
+                        <li class="nav-user-greeting" style="color: var(--text-primary); font-weight: 500; padding: 8px 16px;">Hallo, ${session.username}!</li>
+                        <li><a href="#" id="nav-logout" style="color: var(--danger-color); cursor: pointer;">Abmelden</a></li>
+                    `);
+                    
+                    if (cartDropzone) cartDropzone.style.display = 'flex';
                 }
-
-                // Eigene Links und Begrüßung für eingeloggten Benutzer hinzufügen
-                navLinks.insertAdjacentHTML('beforeend', `
-                    ${adminLinkHtml}
-                    <li><a href="account.html" id="nav-account">Mein Konto</a></li>
-                    <li class="nav-user-greeting" style="color: var(--text-primary); font-weight: 500; padding: 8px 16px;">Hallo, ${session.username}!</li>
-                    <li><a href="#" id="nav-logout" style="color: var(--danger-color); cursor: pointer;">Abmelden</a></li>
-                `);
 
                 // Klick-Event für Logout-Link
                 const logoutBtn = container.querySelector('#nav-logout');
@@ -183,18 +196,19 @@ function checkSessionState(container) {
                             .catch(err => console.error("Fehler beim Abmelden:", err));
                     });
                 }
+            } else {
+                // Gast sieht: Home, Produkte, Login, Registrierung (und Warenkorb)
+                navLinks.insertAdjacentHTML('beforeend', `
+                    <li><a href="index.html" id="nav-products">Produkte</a></li>
+                    <li><a href="login.html" id="nav-login">Login</a></li>
+                    <li><a href="register.html" id="nav-register">Registrierung</a></li>
+                `);
                 
-                // Aktiven Zustand markieren
-                const path = window.location.pathname;
-                const page = path.substring(path.lastIndexOf('/') + 1);
-                if (page === 'account.html') {
-                    const accountLink = container.querySelector('#nav-account');
-                    if (accountLink) accountLink.classList.add('active');
-                } else if (page === 'admin.php') {
-                    const adminLink = container.querySelector('#nav-admin');
-                    if (adminLink) adminLink.classList.add('active');
-                }
+                if (cartDropzone) cartDropzone.style.display = 'flex';
             }
+
+            // Aktiven Zustand markieren
+            highlightActiveLink();
         })
         .catch(err => console.error("Fehler bei der Session-Abfrage:", err));
 }

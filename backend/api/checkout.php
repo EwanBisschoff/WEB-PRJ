@@ -39,6 +39,23 @@ if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
 $db = new DBAccess();
 $conn = $db->connect();
 
+// Überprüfen, ob die Profildaten des Benutzers vollständig sind (EPIC 9 / Alignment)
+$stmtUserCheck = $conn->prepare("SELECT salutation, address, zip, city FROM users WHERE id = ?");
+$stmtUserCheck->execute([$userId]);
+$userCheck = $stmtUserCheck->fetch(PDO::FETCH_ASSOC);
+
+if (
+    !$userCheck || 
+    empty($userCheck['salutation']) || 
+    empty($userCheck['address']) || 
+    empty($userCheck['zip']) || 
+    empty($userCheck['city'])
+) {
+    http_response_code(400);
+    echo json_encode(["error" => "Ihre Adressdaten (Anrede, Adresse, PLZ, Ort) sind unvollständig. Bitte ergänzen Sie diese unter 'Mein Konto', bevor Sie bestellen."]);
+    exit;
+}
+
 try {
     // Transaktion starten
     $conn->beginTransaction();

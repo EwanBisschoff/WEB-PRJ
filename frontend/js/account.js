@@ -54,7 +54,6 @@ function setupTabs() {
     });
 }
 
-// Benutzerprofildaten abrufen und Formular ausfüllen
 function loadUserProfile() {
     fetch('../backend/api/user.php')
         .then(res => {
@@ -62,8 +61,12 @@ function loadUserProfile() {
             return res.json();
         })
         .then(user => {
+            document.getElementById('profile-salutation').value = user.salutation || 'Herr';
             document.getElementById('profile-firstname').value = user.firstname || '';
             document.getElementById('profile-lastname').value = user.lastname || '';
+            document.getElementById('profile-address').value = user.address || '';
+            document.getElementById('profile-zip').value = user.zip || '';
+            document.getElementById('profile-city').value = user.city || '';
             document.getElementById('profile-email').value = user.email || '';
             document.getElementById('profile-username').value = user.username || '';
         })
@@ -270,10 +273,14 @@ function setupForms() {
             
             // Formulardaten sammeln
             profilePendingData = {
-                firstname: document.getElementById('profile-firstname').value,
-                lastname: document.getElementById('profile-lastname').value,
-                email: document.getElementById('profile-email').value,
-                username: document.getElementById('profile-username').value
+                salutation: document.getElementById('profile-salutation').value,
+                firstname: document.getElementById('profile-firstname').value.trim(),
+                lastname: document.getElementById('profile-lastname').value.trim(),
+                address: document.getElementById('profile-address').value.trim(),
+                zip: document.getElementById('profile-zip').value.trim(),
+                city: document.getElementById('profile-city').value.trim(),
+                email: document.getElementById('profile-email').value.trim(),
+                username: document.getElementById('profile-username').value.trim()
             };
 
             // Modal zur Sicherheitsüberprüfung einblenden (EPIC 8)

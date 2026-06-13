@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="95ba7e9d-e66e-4310-9048-eab5ba881dca" name="Changes" comment="Suchleiste gefixed, Pfade noch fix" />
+    <list default="true" id="95ba7e9d-e66e-4310-9048-eab5ba881dca" name="Changes" comment="Suchleiste gefixed, Pfade noch fix">
+      <change beforePath="$PROJECT_DIR$/database/webshop.sql" beforeDir="false" afterPath="$PROJECT_DIR$/database/webshop.sql" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -27,22 +29,22 @@
     &quot;assignee&quot;: &quot;ggerBird&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/EwanBisschoff/WEB-PRJ.git&quot;,
-    &quot;accountId&quot;: &quot;d8f4b9d3-9724-44a5-8874-47b4084be4f8&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/EwanBisschoff/WEB-PRJ.git",
+    "accountId": "ade731af-6cc7-455c-bcde-8bc0aeb01c91"
   },
-  &quot;recentNewPullRequestHead&quot;: {
-    &quot;server&quot;: {
-      &quot;useHttp&quot;: false,
-      &quot;host&quot;: &quot;github.com&quot;,
-      &quot;port&quot;: null,
-      &quot;suffix&quot;: null
+  "recentNewPullRequestHead": {
+    "server": {
+      "useHttp": false,
+      "host": "github.com",
+      "port": null,
+      "suffix": null
     },
-    &quot;owner&quot;: &quot;EwanBisschoff&quot;,
-    &quot;repository&quot;: &quot;WEB-PRJ&quot;
+    "owner": "EwanBisschoff",
+    "repository": "WEB-PRJ"
   }
-}</component>
+}]]></component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
@@ -69,9 +71,10 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "EPIC9__Adminbereich",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/xampp/htdocs/FH_SEM04/WebScripting/EasyElectronics",
+    "last_opened_file_path": "C:/xampp/htdocs/WEB_PRJ/WEB-PRJ",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -85,6 +88,14 @@
     ]
   }
 }]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.32098.37" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.32098.37" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="95ba7e9d-e66e-4310-9048-eab5ba881dca" name="Changes" comment="" />
@@ -98,6 +109,7 @@
       <workItem from="1780410296769" duration="2236000" />
       <workItem from="1781094739412" duration="651000" />
       <workItem from="1781095740323" duration="3018000" />
+      <workItem from="1781336953642" duration="940000" />
     </task>
     <task id="LOCAL-00001" summary="Suche fertig">
       <option name="closed" value="true" />

@@ -14,7 +14,12 @@ CREATE TABLE IF NOT EXISTS `users` (
   `username` VARCHAR(100) NOT NULL UNIQUE,
   `password` VARCHAR(255) NOT NULL,
   `role` VARCHAR(50) NOT NULL DEFAULT 'user',
-  `is_blocked` TINYINT(1) NOT NULL DEFAULT 0
+  `is_blocked` TINYINT(1) NOT NULL DEFAULT 0,
+  `salutation` VARCHAR(20) DEFAULT NULL,
+  `address` VARCHAR(255) DEFAULT NULL,
+  `zip` VARCHAR(20) DEFAULT NULL,
+  `city` VARCHAR(100) DEFAULT NULL,
+  `remember_token` VARCHAR(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -117,3 +122,27 @@ CREATE TABLE IF NOT EXISTS `order_items` (
   FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Daten für Tabelle `users` (Default Admin & User)
+-- --------------------------------------------------------
+INSERT INTO `users` (`firstname`, `lastname`, `email`, `username`, `password`, `role`, `is_blocked`, `salutation`, `address`, `zip`, `city`) 
+VALUES 
+('Admin', 'istrator', 'admin@easyelectronics.at', 'admin', '$2y$10$FeQdTEauijFxgmImoDX27e.K5e1SL8mKY1vNeUo7EcyajLZ0mY6EK', 'admin', 0, 'Herr', 'Technologiestraße 15', '1020', 'Wien'),
+('John', 'Doe', 'john.doe@gmail.com', 'user', '$2y$10$FD7UMBfB2BD0eTBY/0Nkn.AIfzkMBVaxK8b6gUI5UCH/8TNx9LccS', 'user', 0, 'Herr', 'Musterstraße 42', '12345', 'Musterstadt')
+ON DUPLICATE KEY UPDATE 
+`password` = VALUES(`password`),
+`role` = VALUES(`role`),
+`salutation` = VALUES(`salutation`),
+`address` = VALUES(`address`),
+`zip` = VALUES(`zip`),
+`city` = VALUES(`city`);
+
+-- --------------------------------------------------------
+-- Daten für Tabelle `payment_methods` (Default Zahlungsarten)
+-- --------------------------------------------------------
+INSERT INTO `payment_methods` (`id`, `user_id`, `provider`, `details`) VALUES
+(1, 1, 'Visa', '•••• 1111'),
+(2, 2, 'Visa', '•••• 2222'),
+(3, 2, 'PayPal', 'john.doe@gmail.com')
+ON DUPLICATE KEY UPDATE `details`=VALUES(`details`);

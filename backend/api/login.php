@@ -69,15 +69,21 @@ if ($stmtPayCount->fetchColumn() == 0) {
     // Standard-PayPal anlegen
     $stmtAddPay2 = $conn->prepare("INSERT INTO payment_methods (user_id, provider, details) VALUES (?, 'PayPal', ?)");
     $stmtAddPay2->execute([$userId, $user['email']]);
-}
+    }
+    // 4. "Login merken" Cookie-Handling (EPIC 9 / Alignment)
+    if (isset($data->remember) && $data->remember === true) {
+        $token = bin2hex(random_bytes(32));
+        $stmtToken = $conn->prepare("UPDATE users SET remember_token = ? WHERE id = ?");
+        $stmtToken->execute([$token, $userId]);
+        
+        // Cookie für 30 Tage setzen (HTTPOnly)
+        setcookie('remember_token', $token, time() + 30 * 24 * 60 * 60, '/', '', false, true);
+    }
 
-echo json_encode([
-
-"success" => true,
-"username" => $user['username']
-
-]);
-
+    echo json_encode([
+        "success" => true,
+        "username" => $user['username']
+    ]);
 } else {
 
 echo json_encode([
