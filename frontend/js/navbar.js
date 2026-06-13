@@ -160,7 +160,7 @@ function checkSessionState(container) {
                 // Admin Link prüfen (EPIC 9)
                 let adminLinkHtml = '';
                 if (session.role === 'admin') {
-                    adminLinkHtml = `<li><a href="admin.php" id="nav-admin">Admin-Bereich</a></li>`;
+                    adminLinkHtml = `<li><a href="../backend/admin.php" id="nav-admin">Admin-Bereich</a></li>`;
                 }
 
                 // Eigene Links und Begrüßung für eingeloggten Benutzer hinzufügen

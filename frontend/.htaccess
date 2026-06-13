@@ -1,0 +1,6 @@
+# Schutz für die Admin-HTML-Datei im Frontend (EPIC 9)
+# Verhindert den direkten Aufruf im Browser und liefert stattdessen einen echten 404-Fehler zurück.
+# Der Zugriff ist nur serverseitig über admin.php gestattet.
+
+RewriteEngine On
+RewriteRule ^admin\.html$ - [R=404,L]
