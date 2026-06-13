@@ -159,7 +159,7 @@ function checkSessionState(container) {
 
                 // Eigene Links und Begrüßung für eingeloggten Benutzer hinzufügen
                 navLinks.insertAdjacentHTML('beforeend', `
-                    <li><a href="orders.html" id="nav-orders">Meine Bestellungen</a></li>
+                    <li><a href="account.html" id="nav-account">Mein Konto</a></li>
                     <li class="nav-user-greeting" style="color: var(--text-primary); font-weight: 500; padding: 8px 16px;">Hallo, ${session.username}!</li>
                     <li><a href="#" id="nav-logout" style="color: var(--danger-color); cursor: pointer;">Abmelden</a></li>
                 `);
@@ -177,12 +177,12 @@ function checkSessionState(container) {
                     });
                 }
                 
-                // Aktiven Zustand für "Meine Bestellungen" markieren
+                // Aktiven Zustand für "Mein Konto" markieren
                 const path = window.location.pathname;
                 const page = path.substring(path.lastIndexOf('/') + 1);
-                if (page === 'orders.html') {
-                    const ordersLink = container.querySelector('#nav-orders');
-                    if (ordersLink) ordersLink.classList.add('active');
+                if (page === 'account.html') {
+                    const accountLink = container.querySelector('#nav-account');
+                    if (accountLink) accountLink.classList.add('active');
                 }
             }
         })
