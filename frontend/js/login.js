@@ -14,7 +14,7 @@ remember: document.getElementById('remember').checked
 
 };
 
-fetch('/EasyElectronics/backend/api/login.php', {
+fetch('../backend/api/login.php', {
 
 method: 'POST',
 
@@ -33,12 +33,21 @@ body: JSON.stringify(data)
 if(result.success){
 
 document.getElementById('status').innerHTML =
-'Willkommen ' + result.username;
+'Willkommen ' + result.username + '! Sie werden weitergeleitet...';
+document.getElementById('status').style.color = 'var(--success-color)';
+
+// Umleitung nach 1.5 Sekunden (z.B. zurück zur Kasse oder Startseite)
+const urlParams = new URLSearchParams(window.location.search);
+const redirectTo = urlParams.get('redirect') || 'index.html';
+setTimeout(() => {
+    window.location.href = redirectTo;
+}, 1500);
 
 } else {
 
 document.getElementById('status').innerHTML =
 result.message;
+document.getElementById('status').style.color = 'var(--danger-color)';
 }
 
 });

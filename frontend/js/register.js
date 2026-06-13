@@ -34,7 +34,7 @@ document.getElementById('username').value,
 password: password
 };
 
-fetch('/EasyElectronics/backend/api/register.php', {
+fetch('../backend/api/register.php', {
 
 method: 'POST',
 
@@ -51,6 +51,9 @@ body: JSON.stringify(data)
 .then(result => {
 
 alert(result.message);
+if (result.message.includes("erfolgreich") || result.success) {
+    window.location.href = 'login.html';
+}
 
 });
 });

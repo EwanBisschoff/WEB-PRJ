@@ -13,8 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch('navbar.html')
         .then(response => {
             if (!response.ok) {
-                // Relativer Pfad-Fallback für Unterverzeichnisse, falls nötig
-                return fetch('/EasyElectronics/frontend/navbar.html');
+                // Relativer Pfad-Fallback für Unterverzeichnisse
+                return fetch('navbar.html');
             }
             return response;
         })
@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
             highlightActiveLink();
             initDragAndDrop();
             refreshCartBadge();
+            checkSessionState(container);
         })
         .catch(err => console.error("Fehler beim Laden der Navbar:", err));
 });
@@ -59,9 +60,9 @@ function highlightActiveLink() {
     }
 }
 
-// Global verfügbare Funktion zur Aktualisierung des Badges
+// Global verfügbarer Funktion zur Aktualisierung des Badges
 window.refreshCartBadge = function() {
-    fetch('/FH_SEM04/WebScripting/EasyElectronics/backend/api/cart.php')
+    fetch('../backend/api/cart.php')
         .then(res => res.json())
         .then(cart => {
             window.updateCartBadge(cart.total_items);
@@ -115,7 +116,7 @@ function initDragAndDrop() {
 
 // AJAX-Call zum Hinzufügen bei Drag & Drop
 function addProductToCartViaDrag(productId) {
-    fetch('/EasyElectronics/backend/api/cart.php', {
+    fetch('../backend/api/cart.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -139,4 +140,51 @@ function addProductToCartViaDrag(productId) {
         }
     })
     .catch(err => console.error("Fehler beim Hinzufügen des Produkts via Drag:", err));
+}
+
+// Prüft den Anmeldestatus und passt die Navigation dynamisch an (EPIC 7)
+function checkSessionState(container) {
+    fetch('../backend/api/session.php')
+        .then(res => res.json())
+        .then(session => {
+            const navLinks = container.querySelector('.nav-links');
+            if (!navLinks) return;
+
+            if (session.loggedIn) {
+                // Login und Registrierung aus der Liste entfernen
+                const loginLink = container.querySelector('#nav-login');
+                const registerLink = container.querySelector('#nav-register');
+                if (loginLink) loginLink.parentElement.remove();
+                if (registerLink) registerLink.parentElement.remove();
+
+                // Eigene Links und Begrüßung für eingeloggten Benutzer hinzufügen
+                navLinks.insertAdjacentHTML('beforeend', `
+                    <li><a href="orders.html" id="nav-orders">Meine Bestellungen</a></li>
+                    <li class="nav-user-greeting" style="color: var(--text-primary); font-weight: 500; padding: 8px 16px;">Hallo, ${session.username}!</li>
+                    <li><a href="#" id="nav-logout" style="color: var(--danger-color); cursor: pointer;">Abmelden</a></li>
+                `);
+
+                // Klick-Event für Logout-Link
+                const logoutBtn = container.querySelector('#nav-logout');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        fetch('../backend/api/logout.php')
+                            .then(() => {
+                                window.location.href = 'index.html';
+                            })
+                            .catch(err => console.error("Fehler beim Abmelden:", err));
+                    });
+                }
+                
+                // Aktiven Zustand für "Meine Bestellungen" markieren
+                const path = window.location.pathname;
+                const page = path.substring(path.lastIndexOf('/') + 1);
+                if (page === 'orders.html') {
+                    const ordersLink = container.querySelector('#nav-orders');
+                    if (ordersLink) ordersLink.classList.add('active');
+                }
+            }
+        })
+        .catch(err => console.error("Fehler bei der Session-Abfrage:", err));
 }

@@ -31,6 +31,15 @@ $password
 
 ]);
 
+$userId = intval($conn->lastInsertId());
+
+// Standard-Zahlungsarten für den neuen Benutzer anlegen (EPIC 7)
+$stmtAddPay1 = $conn->prepare("INSERT INTO payment_methods (user_id, provider, details) VALUES (?, 'Visa', '•••• 4321')");
+$stmtAddPay1->execute([$userId]);
+
+$stmtAddPay2 = $conn->prepare("INSERT INTO payment_methods (user_id, provider, details) VALUES (?, 'PayPal', ?)");
+$stmtAddPay2->execute([$userId, $data->email]);
+
 echo json_encode([
 
 "message" => "Registrierung erfolgreich"

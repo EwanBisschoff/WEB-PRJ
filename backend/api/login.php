@@ -27,6 +27,41 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 if($user && password_verify($data->password, $user['password'])){
 
 $_SESSION['user'] = $user;
+$userId = intval($user['id']);
+
+// 1. Warenkorb aus der Session mit dem Datenbank-Warenkorb zusammenführen (EPIC 7)
+if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+    foreach ($_SESSION['cart'] as $productId => $quantity) {
+        $stmtMerge = $conn->prepare("
+            INSERT INTO cart_items (user_id, product_id, quantity)
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE quantity = quantity + ?
+        ");
+        $stmtMerge->execute([$userId, $productId, $quantity, $quantity]);
+    }
+}
+
+// 2. Den kompletten Warenkorb aus der Datenbank in die Session laden
+$_SESSION['cart'] = [];
+$stmtCart = $conn->prepare("SELECT product_id, quantity FROM cart_items WHERE user_id = ?");
+$stmtCart->execute([$userId]);
+$dbCartItems = $stmtCart->fetchAll(PDO::FETCH_ASSOC);
+foreach ($dbCartItems as $item) {
+    $_SESSION['cart'][intval($item['product_id'])] = intval($item['quantity']);
+}
+
+// 3. Standard-Zahlungsarten für den Benutzer anlegen, falls keine existieren (EPIC 7)
+$stmtPayCount = $conn->prepare("SELECT COUNT(*) FROM payment_methods WHERE user_id = ?");
+$stmtPayCount->execute([$userId]);
+if ($stmtPayCount->fetchColumn() == 0) {
+    // Standard-Kreditkarte anlegen
+    $stmtAddPay1 = $conn->prepare("INSERT INTO payment_methods (user_id, provider, details) VALUES (?, 'Visa', '•••• 4321')");
+    $stmtAddPay1->execute([$userId]);
+    
+    // Standard-PayPal anlegen
+    $stmtAddPay2 = $conn->prepare("INSERT INTO payment_methods (user_id, provider, details) VALUES (?, 'PayPal', ?)");
+    $stmtAddPay2->execute([$userId, $user['email']]);
+}
 
 echo json_encode([
 

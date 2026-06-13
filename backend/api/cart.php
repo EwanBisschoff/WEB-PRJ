@@ -14,6 +14,17 @@ if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
+// Wenn Benutzer angemeldet ist, aber Session-Warenkorb leer, versuchen wir aus der DB zu laden (EPIC 7)
+$userId = isset($_SESSION['user']) ? intval($_SESSION['user']['id']) : null;
+if ($userId && empty($_SESSION['cart'])) {
+    $stmtCart = $conn->prepare("SELECT product_id, quantity FROM cart_items WHERE user_id = ?");
+    $stmtCart->execute([$userId]);
+    $dbCartItems = $stmtCart->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($dbCartItems as $item) {
+        $_SESSION['cart'][intval($item['product_id'])] = intval($item['quantity']);
+    }
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
@@ -29,7 +40,7 @@ if ($method === 'GET') {
     $productId = isset($input['product_id']) ? intval($input['product_id']) : 0;
     $quantity = isset($input['quantity']) ? intval($input['quantity']) : 1;
 
-    // Aktionen ausführen
+    // Aktionen ausführen und DB synchronisieren, falls eingeloggt (EPIC 7)
     if ($action === 'add') {
         if ($productId > 0) {
             // Prüfen, ob das Produkt in der DB existiert
@@ -38,6 +49,16 @@ if ($method === 'GET') {
                     $_SESSION['cart'][$productId] += 1;
                 } else {
                     $_SESSION['cart'][$productId] = 1;
+                }
+                
+                // DB-Sync wenn eingeloggt
+                if ($userId) {
+                    $stmtMerge = $conn->prepare("
+                        INSERT INTO cart_items (user_id, product_id, quantity)
+                        VALUES (?, ?, 1)
+                        ON DUPLICATE KEY UPDATE quantity = quantity + 1
+                    ");
+                    $stmtMerge->execute([$userId, $productId]);
                 }
             } else {
                 http_response_code(404);
@@ -49,9 +70,25 @@ if ($method === 'GET') {
         if ($productId > 0) {
             if ($quantity <= 0) {
                 unset($_SESSION['cart'][$productId]);
+                
+                // DB-Sync wenn eingeloggt
+                if ($userId) {
+                    $stmtDel = $conn->prepare("DELETE FROM cart_items WHERE user_id = ? AND product_id = ?");
+                    $stmtDel->execute([$userId, $productId]);
+                }
             } else {
                 if (productExists($conn, $productId)) {
                     $_SESSION['cart'][$productId] = $quantity;
+                    
+                    // DB-Sync wenn eingeloggt
+                    if ($userId) {
+                        $stmtUpd = $conn->prepare("
+                            INSERT INTO cart_items (user_id, product_id, quantity)
+                            VALUES (?, ?, ?)
+                            ON DUPLICATE KEY UPDATE quantity = ?
+                        ");
+                        $stmtUpd->execute([$userId, $productId, $quantity, $quantity]);
+                    }
                 } else {
                     http_response_code(404);
                     echo json_encode(["error" => "Produkt nicht gefunden."]);
@@ -62,9 +99,21 @@ if ($method === 'GET') {
     } elseif ($action === 'remove') {
         if ($productId > 0) {
             unset($_SESSION['cart'][$productId]);
+            
+            // DB-Sync wenn eingeloggt
+            if ($userId) {
+                $stmtDel = $conn->prepare("DELETE FROM cart_items WHERE user_id = ? AND product_id = ?");
+                $stmtDel->execute([$userId, $productId]);
+            }
         }
     } elseif ($action === 'clear') {
         $_SESSION['cart'] = [];
+        
+        // DB-Sync wenn eingeloggt
+        if ($userId) {
+            $stmtClear = $conn->prepare("DELETE FROM cart_items WHERE user_id = ?");
+            $stmtClear->execute([$userId]);
+        }
     } else {
         http_response_code(400);
         echo json_encode(["error" => "Ungültige Aktion."]);

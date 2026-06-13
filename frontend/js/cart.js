@@ -4,11 +4,27 @@ document.addEventListener("DOMContentLoaded", () => {
     // Warenkorb-Inhalt laden
     window.loadCartItems();
 
-    // Checkout Button Klick-Event
+    // Checkout Button Klick-Event (EPIC 7)
     const checkoutBtn = document.getElementById('checkout-button');
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', () => {
-            alert("Vielen Dank für Ihre Bestellung! (Dies ist eine Demonstration des EPIC5_Warenkorb)");
+            // Prüfen, ob der Benutzer angemeldet ist
+            fetch('../backend/api/session.php')
+                .then(res => res.json())
+                .then(session => {
+                    if (session.loggedIn) {
+                        // Weiterleitung zur Kasse
+                        window.location.href = 'checkout.html';
+                    } else {
+                        // Benutzer warnen und zur Anmeldung leiten
+                        alert("Bitte melden Sie sich an, um eine Bestellung aufzugeben.");
+                        window.location.href = 'login.html?redirect=checkout.html';
+                    }
+                })
+                .catch(err => {
+                    console.error("Fehler beim Prüfen der Sitzung:", err);
+                    alert("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.");
+                });
         });
     }
 });
@@ -19,7 +35,7 @@ window.loadCartItems = function() {
     const emptyView = document.getElementById('empty-cart-view');
     const itemsContainer = document.getElementById('cart-items');
 
-    fetch('/EasyElectronics/backend/api/cart.php')
+    fetch('../backend/api/cart.php')
         .then(res => {
             if (!res.ok) throw new Error("Fehler beim Laden des Warenkorbs");
             return res.json();
@@ -110,7 +126,7 @@ window.changeQuantity = function(productId, newQty) {
         return;
     }
 
-    fetch('/EasyElectronics/backend/api/cart.php', {
+    fetch('../backend/api/cart.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -149,7 +165,7 @@ window.removeItemWithAnimation = function(productId) {
         
         // Nach Ablauf der Animation den Server-Call abschicken und UI neu laden
         setTimeout(() => {
-            fetch('/EasyElectronics/backend/api/cart.php', {
+            fetch('../backend/api/cart.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
