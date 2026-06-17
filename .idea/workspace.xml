@@ -4,26 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="95ba7e9d-e66e-4310-9048-eab5ba881dca" name="Changes" comment="Suchleiste gefixed, Pfade noch fix">
+    <list default="true" id="95ba7e9d-e66e-4310-9048-eab5ba881dca" name="Changes" comment="simplify dbaccess">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/account.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/account.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/admin.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/cart.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/cart.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/checkout.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/checkout.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/css/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/invoice.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/invoice.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/js/account.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/account.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/js/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/admin.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/js/cart.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/cart.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/js/checkout.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/checkout.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/js/invoice.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/invoice.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/js/navbar.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/navbar.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/js/orders.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/js/orders.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/orders.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/orders.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/register.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,7 +75,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;EPIC9__Adminbereich&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/xampp/htdocs/WEB_PRJ/WEB-PRJ&quot;,
@@ -134,7 +117,11 @@
       <workItem from="1781339932182" duration="1896000" />
       <workItem from="1781341851458" duration="140000" />
       <workItem from="1781342015434" duration="388000" />
-      <workItem from="1781342414795" duration="1159000" />
+      <workItem from="1781342414795" duration="1754000" />
+      <workItem from="1781519911536" duration="736000" />
+      <workItem from="1781538708405" duration="5327000" />
+      <workItem from="1781632391896" duration="9212000" />
+      <workItem from="1781683309204" duration="4319000" />
     </task>
     <task id="LOCAL-00001" summary="Suche fertig">
       <option name="closed" value="true" />
@@ -152,7 +139,15 @@
       <option name="project" value="LOCAL" />
       <updated>1781098588081</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="simplify dbaccess">
+      <option name="closed" value="true" />
+      <created>1781689897969</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1781689897969</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -161,6 +156,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Suche fertig" />
     <MESSAGE value="Suchleiste gefixed, Pfade noch fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="Suchleiste gefixed, Pfade noch fix" />
+    <MESSAGE value="simplify dbaccess" />
+    <option name="LAST_COMMIT_MESSAGE" value="simplify dbaccess" />
   </component>
 </project>
